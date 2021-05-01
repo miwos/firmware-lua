@@ -1,4 +1,8 @@
 {
+  "type": "module",
+  "scripts": {
+    "dev": "node ./scripts/sync-files.js"
+  },
   "dependencies": {
     "@miwos/miwos-bridge": "^0.1.0",
     "chokidar": "^3.5.1"
