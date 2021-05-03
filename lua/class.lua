@@ -14,7 +14,7 @@ local function class(super)
   setmetatable(obj, {
     __call = function (table, ...)
       local instance = setmetatable({}, obj)
-      if super.init then super.init(instance, ...) end
+      if super and super.init then super.init(instance, ...) end
       if table.init then table.init(instance, ...) end
       return instance
     end

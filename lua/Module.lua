@@ -1,5 +1,6 @@
 local utils = require('utils')
-local Module = {}
+local class = require('class')
+local Module = class()
 
 local midiTypeNames = {
   'noteOn',
