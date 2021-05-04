@@ -4,7 +4,7 @@
     "dev": "node ./scripts/sync-files.js"
   },
   "dependencies": {
-    "@miwos/miwos-bridge": "^0.1.0",
+    "@miwos/miwos-bridge": "file:../miwos-bridge",
     "chokidar": "^3.5.1"
   }
 }
