@@ -1,5 +1,7 @@
 local utils = require('utils')
 local class = require('class')
+
+---@class Module
 local Module = class()
 
 local midiTypeNames = {
@@ -9,10 +11,15 @@ local midiTypeNames = {
 }
 
 ---Initialize the module.
----@param patch table The patch this module belongs to.
-function Module:init(patch)
-  self._patch = patch
+function Module:init()
   self._outputs = {}
+
+  -- Will be set in `Patch#_initModules()`
+  self._patch = nil
+  self._id = nil
+  
+  -- Will be set in `Miwos#createModule()`
+  self._type = nil
 end
 
 ---Connect an output to the input of another module.
@@ -37,9 +44,9 @@ function Module:output(index, message)
   if not output then return end
 
   local moduleId, input = unpack(output)
-  local module = self._patch.modules[moduleId]
+  local module = moduleId == 0 and Miwos.output or self._patch.modules[moduleId]
   if not module then return end
-
+  
   -- Call a midi-type agnostic function like `input1()`.
   local numberedInput = 'input' .. input
   utils.callIfExists(module[numberedInput], { module, message })

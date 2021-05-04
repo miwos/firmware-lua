@@ -1,9 +1,14 @@
 local Module = require('Module')
+local Patch = require('Patch')
 local class = require('class')
 
 Miwos = {
+  ---@type Module
   input = Module(),
-  output = Module()
+  ---@type Module
+  output = Module(),
+  ---@type Patch
+  activePatch = nil
 }
 
 ---Send midi message to midi devices.
@@ -24,9 +29,20 @@ function Miwos.output:input(index, message)
 end
 
 ---Return a new module class.
----@return any
-function Miwos.Module()
-  return class(Module)
+---@param name string
+---@return table
+function Miwos.createModule(name)
+  local newModule = class(Module)
+  newModule._type = name
+  return newModule
+end
+
+---Load a patch from file.
+---@param name string
+---@return Patch
+function Miwos.loadPatch(name)
+  local data = loadfile('lua/patches/' .. name .. '.lua')
+  return Patch(data)
 end
 
 return Miwos

@@ -1,6 +1,6 @@
 ---Call a function if it exists.
----@param fn any
----@param args any
+---@param fn function
+---@param args table
 local function callIfExists(fn, args)
   if fn then
     fn(unpack(args or {}))

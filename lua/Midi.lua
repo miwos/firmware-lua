@@ -1,5 +1,5 @@
 -- The global Midi object might have already been created by c++.
-Midi = _G.Midi or {}
+-- Midi = _G.Midi or {}
 Midi.TypeNoteOn = 1
 Midi.TypeNoteOff = 2
 Midi.TypeControlChange = 3

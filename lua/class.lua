@@ -1,26 +1,31 @@
 ---A very basic class helper with inheritance.
 ---@param super table
 ---@return table
-local function class(super)
-  local obj = {}
-  obj.__index = obj
+function class(super)
+  local c = {}
 
-  -- Inherit super class by making a shallow copy.
+  -- Inherit super by making a shallow copy.
   if type(super) == 'table' then
-    for key,value in pairs(super) do obj[key] = value end
-    obj.super = super
+    for key,value in pairs(super) do c[key] = value end
+    c._super = super
   end
 
-  setmetatable(obj, {
-    __call = function (table, ...)
-      local instance = setmetatable({}, obj)
-      if super and super.init then super.init(instance, ...) end
-      if table.init then table.init(instance, ...) end
-      return instance
-    end
-  })
+  c.__index = c
+  local mt = {}
 
-  return obj
+  ---Create a new instance.
+  ---@param table table
+  ---@return table
+  mt.__call = function(table, ...)
+    local instance = {}
+    setmetatable(instance, c)
+    if super and super.init then super.init(instance, ...) end
+    if table.init then table.init(instance, ...) end
+    return instance
+  end
+
+  setmetatable(c, mt)
+  return c
 end
 
 return class
