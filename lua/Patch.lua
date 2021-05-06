@@ -44,6 +44,18 @@ end
 ---Activate the patch.
 function Patch:activate()
   Miwos.activePatch = self
+
+  local encoders = self.interface.page1.encoders
+
+  for index, encoder in ipairs(encoders) do
+    local moduleId, moduleParam = unpack(encoder)
+    local module = self.modules[moduleId]
+    if module then
+      local value = module.params[moduleParam]
+      Encoder.write(index - 1, value)
+      Log.info('Write: ', moduleParam, index, value)
+    end
+  end
 end
 
 return Patch

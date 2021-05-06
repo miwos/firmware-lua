@@ -30,12 +30,6 @@ function Module:connect(output, moduleId, input)
   self._outputs[output] = { moduleId, input }
 end
 
----Return a human readable name for debugging (e.g.: delay1)
----@return string
-function Module:_name()
-  return self._type .. self._id
-end
-
 ---Send data to output.
 ---@param index number The output index.
 ---@param message table The midi message to send.
@@ -57,6 +51,18 @@ function Module:output(index, message)
 
   -- Call a generic `input()` function that handles any input.
   utils.callIfExists(module.input, { module, input, message })
+end
+
+---comment
+---@param props table<string, PropBase>
+function Module:defineProps(props)
+  
+end
+
+---Return a human readable name for debugging (e.g.: delay1)
+---@return string
+function Module:_name()
+  return self._type .. self._id
 end
 
 ---Finish unfinished midi notes to prevent midi panic.
