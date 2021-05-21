@@ -7,15 +7,6 @@ local function callIfExists(fn, args)
   end
 end
 
-local function isPrimitve(var)
-  local varType = type(var)
-  return (
-    varType == 'number' or
-    varType == 'string' or
-    varType == 'boolean'    
-  )
-end
-
 return {
   callIfExists = callIfExists
 }

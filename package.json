@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "@miwos/miwos-bridge": "file:../miwos-bridge",
-    "chokidar": "^3.5.1"
+    "chokidar": "^3.5.1",
+    "lua-on-arduino": "^0.1.0"
   }
 }
