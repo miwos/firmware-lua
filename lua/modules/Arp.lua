@@ -4,10 +4,12 @@ local utils = require('utils')
 local Arp = Miwos.createModule('Arp')
 
 Arp:defineProps{
-  speed = Prop.Number{ default = 120, min = 60, max = 1200 }, -- bpm
-  gate = Prop.Number{ default = 0.5, min = 0.1, max = 1 },
+  speed = Prop.Number{ default = 240, min = 30, max = 1300, step = 1 }, -- bpm
+  gate = Prop.Number{ default = 0.5, min = 0, max = 1 },
   hold = Prop.Number{ default = 0 }
 }
+
+Arp.minGateDuration = 5 -- ms
 
 function Arp:init()
   self.notes = {}
@@ -44,8 +46,10 @@ end
 function Arp:update()
   if self.noteIndex > #self.notes then self.noteIndex = 1 end
 
-  local interval = self.interval
-  local gateDuration = math.max(10, interval * self.props.gate)
+  local gateDuration = math.max(
+    self.minGateDuration,
+    self.interval * self.props.gate
+  )
 
   local note = self.notes[self.noteIndex]
   -- Check for nil because the notes might have been cleared in the meantime.
@@ -79,6 +83,10 @@ function Arp:clear()
   self.notes = {}
   self.noteIndex = 1
   self.playing = false
+end
+
+function Arp:destroy()
+  Timer.cancel(self.timerId)
 end
 
 return Arp

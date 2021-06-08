@@ -1,4 +1,5 @@
 local class = require('class')
+local utils = require "utils"
 
 ---@class Patch
 local Patch = class()
@@ -69,6 +70,7 @@ function Patch:_updateModuleInstance(id, module, NewModule)
   newModule:_applyState(state)
   newModule._id = id
   newModule._patch = self
+  module:destroy()
   self.modules[id] = newModule
 end
 

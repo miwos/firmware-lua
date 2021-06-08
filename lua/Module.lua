@@ -67,12 +67,11 @@ end
 
 ---Update a prop.
 ---@param name string - The prop name.
----@param rawValue number - The raw encoder value.
-function Module:updateProp(name, rawValue)
+---@param value number - The raw encoder value.
+function Module:updateProp(name, value)
   local prop = self._props[name]
   if prop then
     local oldValue = self.props[name]
-    local value = prop:decodeValue(rawValue)
     self.props[name] = value
     utils.callIfExists(self['propChange_' .. name], { self, value, oldValue })
   else
@@ -118,5 +117,7 @@ end
 function Module.__hmrAccept(data, module)
   if data then Miwos.activePatch:updateModule(data.type, module) end
 end
+
+function Module:destroy() end
 
 return Module
