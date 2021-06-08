@@ -4,8 +4,6 @@
     "dev": "node ./scripts/sync-files.js"
   },
   "dependencies": {
-    "@miwos/miwos-bridge": "file:../miwos-bridge",
-    "chokidar": "^3.5.1",
-    "lua-on-arduino": "^0.1.0"
+    "lua-on-arduino": "file:../../lua-on-arduino/desktop"
   }
 }
