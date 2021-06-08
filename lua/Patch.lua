@@ -24,8 +24,9 @@ end
 
 ---Initialize modules.
 function Patch:_initModules()
-  for id, Ctor in pairs(self.types) do
-    local module = Ctor()
+  for id, Module in pairs(self.types) do
+    local module = Module()
+    module._id = id
     module._patch = self
     self.modules[id] = module
   end  
@@ -41,21 +42,50 @@ function Patch:_makeConnections()
   end  
 end
 
----Activate the patch.
+---Activate the patch and initialize the encoders.
 function Patch:activate()
   Miwos.activePatch = self
 
   local encoders = self.interface.page1.encoders
-
   for index, encoder in ipairs(encoders) do
-    local moduleId, moduleParam = unpack(encoder)
+    local moduleId, propName = unpack(encoder)
     local module = self.modules[moduleId]
-    if module then
-      local value = module.params[moduleParam]
-      Encoder.write(index - 1, value)
-      Log.info('Write: ', moduleParam, index, value)
+    local prop = module and module._props[propName]
+    if prop then
+      local rawValue = prop:encodeValue(prop.default)
+      Encoder.write(index, rawValue)
+      Log.info(string.format('Write encoder#%d: %d', index, rawValue))
     end
   end
+end
+
+---Update a single module instance.
+---@param id any
+---@param module Module
+---@param NewModule Module
+function Patch:_updateModuleInstance(id, module, NewModule)
+  local state = module:_saveState()
+  local newModule = NewModule()
+  newModule:_applyState(state)
+  newModule._id = id
+  newModule._patch = self
+  self.modules[id] = newModule
+end
+
+---Update all module instances of the specified type.
+---@param type string
+---@param NewModule Module
+function Patch:updateModule(type, NewModule)
+  local updatedModule = false
+  for id, module in pairs(self.modules) do
+    if module._type == type then 
+      self:_updateModuleInstance(id, module, NewModule)
+      updatedModule = true
+    end
+  end
+
+  -- If we changed a module we have to redo the connections.
+  if updatedModule then self:_makeConnections() end
 end
 
 return Patch

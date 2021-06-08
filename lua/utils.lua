@@ -1,12 +1,20 @@
+local utils = {}
+
 ---Call a function if it exists.
 ---@param fn function
 ---@param args table
-local function callIfExists(fn, args)
+function utils.callIfExists(fn, args)
   if fn then
     fn(unpack(args or {}))
   end
 end
 
-return {
-  callIfExists = callIfExists
-}
+function utils.mapValue(value, inMin, inMax, outMin, outMax)
+  return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+end
+
+function utils.bpmToMillis(value)
+  return 60000 / value
+end
+
+return utils

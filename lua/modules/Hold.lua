@@ -11,7 +11,7 @@ function Hold:input1_noteOn(message)
   if (time - self.lastNoteTime > 100) then
     self:clear()
   end
-  self:addNote(message.payload)
+  self:addNote(message.data)
   self.lastNoteTime = time
 end
 

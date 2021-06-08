@@ -24,7 +24,7 @@ function Miwos.output:input(index, message)
   local action = actions[message.type]
   if action then
     -- Decrease index, because we use zero-based index in c++.
-    action(index - 1, unpack(message.payload))
+    action(index - 1, unpack(message.data))
   end
 end
 
@@ -42,7 +42,9 @@ end
 ---@return Patch
 function Miwos.loadPatch(name)
   local data = loadfile('lua/patches/' .. name .. '.lua')
-  return Patch(data)
+  local patch = Patch(data)
+  patch:activate()
+  return patch
 end
 
 return Miwos

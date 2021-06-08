@@ -24,7 +24,7 @@ end
 
 ---Call an event's callback and clear the event.
 ---@param eventId integer
-function Timer.handleEvent(eventId)
+function Timer.handleEmit(eventId)
   utils.callIfExists(Timer.events[eventId])
   Timer.events[eventId] = nil
 end

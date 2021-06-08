@@ -3,6 +3,8 @@ local class = require('class')
 
 ---@class Module
 local Module = class()
+Module.__hmrKeep = {}
+Module._props = {}
 
 local midiTypeNames = {
   'noteOn',
@@ -20,6 +22,16 @@ function Module:init()
   
   -- Will be set in `Miwos#createModule()`
   self._type = nil
+
+  -- Unitialize default values.
+  self.props = {}
+  for key, prop in pairs(self._props) do
+    self.props[key] = prop.default
+  end
+end
+
+function Module:defineProps(props)
+  self._props = props
 end
 
 ---Connect an output to the input of another module.
@@ -53,10 +65,19 @@ function Module:output(index, message)
   utils.callIfExists(module.input, { module, input, message })
 end
 
----comment
----@param props table<string, PropBase>
-function Module:defineProps(props)
-  
+---Update a prop.
+---@param name string - The prop name.
+---@param rawValue number - The raw encoder value.
+function Module:updateProp(name, rawValue)
+  local prop = self._props[name]
+  if prop then
+    local oldValue = self.props[name]
+    local value = prop:decodeValue(rawValue)
+    self.props[name] = value
+    utils.callIfExists(self['propChange_' .. name], { self, value, oldValue })
+  else
+    Log.warning(string.format("No prop '%s' on module %s", name, self._type))
+  end
 end
 
 ---Return a human readable name for debugging (e.g.: delay1)
@@ -67,6 +88,35 @@ end
 
 ---Finish unfinished midi notes to prevent midi panic.
 function Module:_finishNotes()
+end
+
+---Save the module instance's state. Only properties defined in `__hmrKeep` are
+---saved. Note: unlike `__hmrAccept()` and `__hmrDispose()` this function is
+---called for each instance (see `Patch#updateModule()`).
+---@return table - the state
+function Module:_saveState()
+  local state = {}
+  for _, property in pairs(self.__hmrKeep) do
+    state[property] = self[property]
+  end
+  return state  
+end
+
+---Apply the module instance's state. See `Module#_saveState()`.
+---@param state table
+function Module:_applyState(state)
+  for _, property in pairs(self.__hmrKeep) do
+    if state[property] ~= nil then self[property] = state[property] end
+  end
+end
+
+function Module.__hmrDispose(OldModule)
+  -- The type is set by `Miwos.createModule()` therefore we have to transfer it.
+  return { type = OldModule._type }
+end
+
+function Module.__hmrAccept(data, module)
+  if data then Miwos.activePatch:updateModule(data.type, module) end
 end
 
 return Module

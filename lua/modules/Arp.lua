@@ -1,27 +1,35 @@
+local utils = require('utils')
+
 ---@class ModuleArp : Module
 local Arp = Miwos.createModule('Arp')
+
+Arp:defineProps{
+  speed = Prop.Number{ default = 120, min = 60, max = 1200 }, -- bpm
+  gate = Prop.Number{ default = 0.5, min = 0.1, max = 1 },
+  hold = Prop.Number{ default = 0 }
+}
 
 function Arp:init()
   self.notes = {}
   self.noteIndex = 1
   self.lastNoteTime = 0
   self.timerId = nil
-
-  self.defineProps({
-    interval = Prop.Number{ value = 127, min = 100, max = 1000 },
-    gate = Prop.Number{ min = 0.1, max =  1 },
-    hold = Prop.Boolean(false),
-    test = Prop.Select{ options = { "Option1", "Option2" }}
-  })
+  self.interval = 150
 end
 
+function Arp:propChange_speed(value)
+  self.interval = utils.bpmToMillis(value)
+end
+
+---@param message MidiNoteOn
 function Arp:input1_noteOn(message)
+  -- Treat notes that are played close to each other in time as the input chord.
   local time = Timer.now()
-  if (time - self.lastNoteTime > 100) then
-    self:clear()
-  end
-  self:addNote(message.payload)
+  if (time - self.lastNoteTime > 100) then self:clear() end
+
+  self:addNote(message.data)
   self.lastNoteTime = time
+
   if not self.playing then
     self:update()
     self.playing = true
@@ -29,13 +37,14 @@ function Arp:input1_noteOn(message)
 end
 
 function Arp:input1_noteOff()
-  if not self.props.hold then self:clear() end
+  self:clear()
+  -- if not self.props.hold then self:clear() end
 end
 
 function Arp:update()
   if self.noteIndex > #self.notes then self.noteIndex = 1 end
 
-  local interval = self.props.interval.value
+  local interval = self.interval
   local gateDuration = math.max(10, interval * self.props.gate)
 
   local note = self.notes[self.noteIndex]
@@ -48,7 +57,7 @@ function Arp:update()
   end
 
   local _self = self
-  self.timerId = Timer.schedule(Timer.now() + self.props.interval, function ()
+  self.timerId = Timer.schedule(Timer.now() + self.interval, function ()
     Arp.update(_self)
   end)
 

@@ -1,4 +1,4 @@
-Midi = _G.MIDI or {}
+Midi = _G.Midi or {}
 
 -- The global Midi object might have already been created by c++.
 -- Midi = _G.Midi or {}
@@ -6,22 +6,37 @@ Midi.TypeNoteOn = 1
 Midi.TypeNoteOff = 2
 Midi.TypeControlChange = 3
 
--- Send midi functions:
+---@alias MidiType "Midi.TypeNoteOn" | "Midi.TypeNoteOff" | "Midi.TypeControlChange"
 
+---@class MidiMessage
+---@field type MidiType
+
+---@class MidiNoteOn : MidiMessage
+---@field data number[] note, velocity, channel
+
+---@class MidiNoteOff : MidiMessage
+---@field data number[] note, velocity, channel
+
+---@class MidiControlChange: MidiMessage
+---@field data number[] control, value, channel
+
+---@return MidiNoteOn
 function Midi.NoteOn(note, velocity, channel)
   return Midi.Message(Midi.TypeNoteOn, { note, velocity, channel })
 end
 
+---@return MidiNoteOff
 function Midi.NoteOff(note, velocity, channel)
   return Midi.Message(Midi.TypeNoteOff, { note, velocity, channel })
 end
 
+---@return MidiControlChange
 function Midi.ControlChange(control, value, channel)
   return Midi.Message(Midi.TypeControlChange, { control, value, channel })
 end
 
-function Midi.Message(type, payload)
-  return { type = type, payload = payload }
+function Midi.Message(type, data)
+  return { type = type, data = data }
 end
 
 -- Receive midi functions:
