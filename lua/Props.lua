@@ -1,17 +1,27 @@
 local mt = {}
 
 function mt:__newindex(key, value)
-  self._values[key] = value
+  ---@type Prop
+  local prop = self._props[key]
+  if prop then
+    prop:setValue(value)
+  end
 end
 
 function mt:__index(key)
-  return self._values[key]
+  ---@type Prop
+  local prop = self._props[key]
+  return prop and prop:getValue() or nil
 end
 
-local function Props()
-  local props = { _values = {} }
-  setmetatable(props, mt)
-  return props
+local function Props(module, props)
+  for name, prop in pairs(props) do
+    prop.module = module
+    prop.name = name
+  end
+  local t = { _props = props }
+  setmetatable(t, mt)
+  return t
 end
 
 return Props

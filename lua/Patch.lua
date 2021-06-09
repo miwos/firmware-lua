@@ -46,18 +46,7 @@ end
 ---Activate the patch and initialize the encoders.
 function Patch:activate()
   Miwos.activePatch = self
-
-  local encoders = self.interface.page1.encoders
-  for index, encoder in ipairs(encoders) do
-    local moduleId, propName = unpack(encoder)
-    local module = self.modules[moduleId]
-    local prop = module and module._props[propName]
-    if prop then
-      local rawValue = prop:encodeValue(prop.default)
-      Encoder.write(index, rawValue)
-      Log.info(string.format('Write encoder#%d: %d', index, rawValue))
-    end
-  end
+  Interface:patchChange(self)
 end
 
 ---Update a single module instance.

@@ -1,12 +1,12 @@
 ---@class ModuleChorder : Module
 local Chorder = Miwos.createModule('Chorder')
 
-Chorder:defineProps({
-  pitch1 = Prop.Number({ default = 12, min = -12, max = 12, step = 1 }),
-  pitch2 = Prop.Number({ default = -12, min = -12, max = 12, step = 1 }),
-})
-
 function Chorder:init()
+  self:defineProps({
+    pitch1 = Prop.Number({ default = 12, min = -12, max = 12, step = 1 }),
+    pitch2 = Prop.Number({ default = -12, min = -12, max = 12, step = 1 }),
+  })
+
   self.notes = {}
   self.inputs = 1
   self.outputs = 1

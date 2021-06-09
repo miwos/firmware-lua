@@ -20,7 +20,7 @@ return {
     page1 = {
       encoders = {
         { 3, 'gate' },
-        { 2, 'pitch1' },
+        { 3, 'speed' },
       },
     },
   },

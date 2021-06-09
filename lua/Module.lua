@@ -24,19 +24,11 @@ function Module:init()
   -- Will be set in `Miwos#createModule()`
   self._type = nil
 
-  -- This is where the Prop instances are stored. `self#props` (without the
-  -- underscore) is just a proxy table to get and set the values.
-  self._props = {}
-
-  -- Unitialize default values.
-  self.props = Props()
-  for key, prop in pairs(self._props) do
-    self.props[key] = prop.default
-  end
+  self.props = {}
 end
 
 function Module:defineProps(props)
-  self._props = props
+  self.props = Props(self, props)
 end
 
 ---Connect an output to the input of another module.
@@ -75,20 +67,6 @@ function Module:output(index, message)
 
   -- Call a generic `input()` function that handles any input.
   utils.callIfExists(module.input, { module, input, message })
-end
-
----Update a prop.
----@param name string - The prop name.
----@param value number - The raw encoder value.
-function Module:updateProp(name, value)
-  local prop = self._props[name]
-  if prop then
-    local oldValue = self.props[name]
-    self.props[name] = value
-    utils.callIfExists(self['propChange_' .. name], { self, value, oldValue })
-  else
-    Log.warning(string.format("No prop '%s' on module %s", name, self._type))
-  end
 end
 
 ---Return a human readable name for debugging (e.g.: delay1)

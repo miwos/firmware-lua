@@ -23,14 +23,10 @@ function Encoder.handleChange(index, value)
     return
   end
 
-  local prop = module._props[propName]
+  local prop = module.props._props[propName]
   if not prop then
     return
   end
 
-  local propValue = prop:decodeValue(value)
-  local displayValue = prop:displayValue(propValue)
-
-  module:updateProp(propName, propValue)
-  Display.write(index, propName .. ': ' .. displayValue)
+  prop:setRawValue(value)
 end
