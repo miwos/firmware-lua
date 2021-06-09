@@ -1,15 +1,16 @@
 local utils = require('utils')
 local class = require('class')
+local Props = require('Props')
 
 ---@class Module
 local Module = class()
+
 Module.__hmrKeep = {}
-Module._props = {}
 
 local midiTypeNames = {
   'noteOn',
   'noteOff',
-  'controlChange'
+  'controlChange',
 }
 
 ---Initialize the module.
@@ -19,12 +20,16 @@ function Module:init()
   -- Will be set in `Patch#_initModules()`
   self._patch = nil
   self._id = nil
-  
+
   -- Will be set in `Miwos#createModule()`
   self._type = nil
 
+  -- This is where the Prop instances are stored. `self#props` (without the
+  -- underscore) is just a proxy table to get and set the values.
+  self._props = {}
+
   -- Unitialize default values.
-  self.props = {}
+  self.props = Props()
   for key, prop in pairs(self._props) do
     self.props[key] = prop.default
   end
@@ -47,19 +52,26 @@ end
 ---@param message table The midi message to send.
 function Module:output(index, message)
   local output = self._outputs[index]
-  if not output then return end
+  if not output then
+    return
+  end
 
   local moduleId, input = unpack(output)
   local module = moduleId == 0 and Miwos.output or self._patch.modules[moduleId]
-  if not module then return end
-  
+  if not module then
+    return
+  end
+
   -- Call a midi-type agnostic function like `input1()`.
   local numberedInput = 'input' .. input
   utils.callIfExists(module[numberedInput], { module, message })
 
   -- Call a midi-type aware function like `input1_noteOn()`.
-  local midiType =  midiTypeNames[message.type]
-  utils.callIfExists(module[numberedInput .. '_' .. midiType], { module, message })
+  local midiType = midiTypeNames[message.type]
+  utils.callIfExists(
+    module[numberedInput .. '_' .. midiType],
+    { module, message }
+  )
 
   -- Call a generic `input()` function that handles any input.
   utils.callIfExists(module.input, { module, input, message })
@@ -98,14 +110,16 @@ function Module:_saveState()
   for _, property in pairs(self.__hmrKeep) do
     state[property] = self[property]
   end
-  return state  
+  return state
 end
 
 ---Apply the module instance's state. See `Module#_saveState()`.
 ---@param state table
 function Module:_applyState(state)
   for _, property in pairs(self.__hmrKeep) do
-    if state[property] ~= nil then self[property] = state[property] end
+    if state[property] ~= nil then
+      self[property] = state[property]
+    end
   end
 end
 
@@ -115,9 +129,12 @@ function Module.__hmrDispose(OldModule)
 end
 
 function Module.__hmrAccept(data, module)
-  if data then Miwos.activePatch:updateModule(data.type, module) end
+  if data then
+    Miwos.activePatch:updateModule(data.type, module)
+  end
 end
 
-function Module:destroy() end
+function Module:destroy()
+end
 
 return Module

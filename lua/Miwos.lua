@@ -8,7 +8,7 @@ Miwos = {
   ---@type Module
   output = Module(),
   ---@type Patch
-  activePatch = nil
+  activePatch = nil,
 }
 
 ---Send midi message to midi devices.
@@ -18,7 +18,7 @@ function Miwos.output:input(index, message)
   local actions = {
     [Midi.TypeNoteOn] = Midi.sendNoteOn,
     [Midi.TypeNoteOff] = Midi.sendNoteOff,
-    [Midi.TypeControlChange] = Midi.sendControlChange
+    [Midi.TypeControlChange] = Midi.sendControlChange,
   }
 
   local action = actions[message.type]

@@ -17,7 +17,9 @@ end
 ---Cancel an event.
 ---@param eventId number The unique id returned by `Timer:scheulde()`
 function Timer.cancel(eventId)
-  if eventId == nil then return end
+  if eventId == nil then
+    return
+  end
   Timer._cancel(eventId)
   Timer.events[eventId] = nil
 end

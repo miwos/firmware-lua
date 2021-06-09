@@ -6,7 +6,7 @@ function class(base)
   c.__index = c
   c.__super = base
 
-  -- 'Inherit' all of base properties and functions. 
+  -- 'Inherit' all of base properties and functions.
   local mt = base and { __index = base } or {}
 
   ---Create a new instance.
@@ -15,8 +15,12 @@ function class(base)
   mt.__call = function(table, ...)
     local instance = {}
     setmetatable(instance, c)
-    if base and base.init then base.init(instance, ...) end
-    if table.init then table.init(instance, ...) end
+    if base and base.init then
+      base.init(instance, ...)
+    end
+    if table.init then
+      table.init(instance, ...)
+    end
     return instance
   end
 

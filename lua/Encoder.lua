@@ -7,15 +7,30 @@ Encoder.max = 127
 function Encoder.handleChange(index, value)
   local patch = Miwos.activePatch
 
-  if not patch then return end
+  if not patch then
+    return
+  end
 
   local encoders = patch.interface.page1.encoders
   local encoder = encoders[index]
-  if not encoder then return end
+  if not encoder then
+    return
+  end
 
   local moduleId, propName = unpack(encoder)
   local module = patch.modules[moduleId]
-  if not module then return end
+  if not module then
+    return
+  end
 
-  module:updateProp(propName, value)
+  local prop = module._props[propName]
+  if not prop then
+    return
+  end
+
+  local propValue = prop:decodeValue(value)
+  local displayValue = prop:displayValue(propValue)
+
+  module:updateProp(propName, propValue)
+  Display.write(index, propName .. ': ' .. displayValue)
 end

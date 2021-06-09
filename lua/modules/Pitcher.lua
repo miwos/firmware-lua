@@ -1,9 +1,11 @@
 ---@class Pitcher : Module
 local Pitcher = Miwos.createModule('Pitcher')
 
-Pitcher:defineProps{
-  semitones = Prop.Number{ default = 0, min = 0, max = 24 }
-}
+function Pitcher:init()
+  self.defineProps{
+    semitones = Prop.Number{ default = 0, min = 0, max = 24 }
+  }
+end
 
 ---@param message MidiNoteOn
 function Pitcher:input1_noteOn(message)

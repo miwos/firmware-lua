@@ -1,5 +1,5 @@
 local class = require('class')
-local utils = require "utils"
+local utils = require('utils')
 
 ---@class Patch
 local Patch = class()
@@ -30,17 +30,17 @@ function Patch:_initModules()
     module._id = id
     module._patch = self
     self.modules[id] = module
-  end  
+  end
 end
 
 ---Connect modules.
 function Patch:_makeConnections()
   for _, connection in pairs(self.connections) do
     local fromId, output, toId, input = unpack(connection)
-  
+
     local fromModule = fromId == 0 and Miwos.input or self.modules[fromId]
     fromModule:connect(output, toId, input)
-  end  
+  end
 end
 
 ---Activate the patch and initialize the encoders.
@@ -80,14 +80,16 @@ end
 function Patch:updateModule(type, NewModule)
   local updatedModule = false
   for id, module in pairs(self.modules) do
-    if module._type == type then 
+    if module._type == type then
       self:_updateModuleInstance(id, module, NewModule)
       updatedModule = true
     end
   end
 
   -- If we changed a module we have to redo the connections.
-  if updatedModule then self:_makeConnections() end
+  if updatedModule then
+    self:_makeConnections()
+  end
 end
 
 return Patch
