@@ -11,7 +11,7 @@ local Patch = class()
 
 ---Initialize patch.
 ---@param args PatchArgs
-function Patch:init(args)
+function Patch:construct(args)
   self.types = args.types
   self.connections = args.connections
   self.interface = args.interface
@@ -59,7 +59,7 @@ function Patch:_updateModuleInstance(id, module, NewModule)
   newModule:_applyState(state)
   newModule._id = id
   newModule._patch = self
-  module:destroy()
+  utils.callIfExists(module.destroy, { module })
   self.modules[id] = newModule
 end
 

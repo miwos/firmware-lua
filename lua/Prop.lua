@@ -36,7 +36,7 @@ end
 ---@field step number|nil
 Prop.Number = class(PropBase)
 
-function Prop.Number:init(args)
+function Prop.Number:construct(args)
   self.min = args.min or 0
   self.max = args.max or 127
   self.step = args.step

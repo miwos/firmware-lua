@@ -1,30 +1,30 @@
----A very basic class helper with inheritance.
+---A very basic class helper with multiple inheritance.
 ---@param base table
 ---@return table
 function class(base)
   local c = {}
   c.__index = c
-  c.__super = base
 
-  -- 'Inherit' all of base properties and functions.
-  local mt = base and { __index = base } or {}
-
-  ---Create a new instance.
-  ---@param table table
+  --Create a new instance.
+  ---@param _ table
   ---@return table
-  mt.__call = function(table, ...)
-    local instance = {}
-    setmetatable(instance, c)
-    if base and base.init then
-      base.init(instance, ...)
-    end
-    if table.init then
-      table.init(instance, ...)
+  local function call(_, ...)
+    local instance = setmetatable({}, c)
+    if c.construct then
+      c.construct(instance, ...)
     end
     return instance
   end
 
-  setmetatable(c, mt)
+  if base then
+    c.super = base
+    local mt = setmetatable({ __index = base }, base)
+    mt.__call = call
+    setmetatable(c, mt)
+  else
+    setmetatable(c, { __call = call })
+  end
+
   return c
 end
 

@@ -37,6 +37,10 @@ function Miwos.createModule(name)
   return newModule
 end
 
+function Miwos:getModule(id)
+  return self.activePatch and self.activePatch.modules[id] or nil
+end
+
 ---Load a patch from file.
 ---@param name string
 ---@return Patch

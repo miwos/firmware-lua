@@ -1,72 +1,33 @@
-local utils = require('utils')
 local class = require('class')
+local Node = require('Node')
 local Props = require('Props')
+local utils = require('utils')
 
----@class Module
-local Module = class()
+---@class Module : Node
+-- Will both be set in `Patch#_initModules()`
+---@field _patch Patch
+---@field _id Patch
+-- Will be set in `Miwos#createModule()`
+---@field _type string
+---@field destroy function
+---@field defineProps function
+---@field props table
 
+local Module = class(Node)
+
+---See `Module#_applyState` and `Module#_saveState`.
 Module.__hmrKeep = {}
 
-local midiTypeNames = {
-  'noteOn',
-  'noteOff',
-  'controlChange',
-}
-
----Initialize the module.
-function Module:init()
-  self._outputs = {}
-
-  -- Will be set in `Patch#_initModules()`
-  self._patch = nil
-  self._id = nil
-
-  -- Will be set in `Miwos#createModule()`
-  self._type = nil
-
+function Module:construct()
+  Module.super.construct(self)
   self.props = {}
+  utils.callIfExists(self.init, { self })
 end
 
+---Define the properties that are available on the module.
+---@param props table<string, Prop>
 function Module:defineProps(props)
   self.props = Props(self, props)
-end
-
----Connect an output to the input of another module.
----@param output number The output index.
----@param moduleId number The id of the module to connect to.
----@param input number The input index of the module to connect to.
-function Module:connect(output, moduleId, input)
-  self._outputs[output] = { moduleId, input }
-end
-
----Send data to output.
----@param index number The output index.
----@param message table The midi message to send.
-function Module:output(index, message)
-  local output = self._outputs[index]
-  if not output then
-    return
-  end
-
-  local moduleId, input = unpack(output)
-  local module = moduleId == 0 and Miwos.output or self._patch.modules[moduleId]
-  if not module then
-    return
-  end
-
-  -- Call a midi-type agnostic function like `input1()`.
-  local numberedInput = 'input' .. input
-  utils.callIfExists(module[numberedInput], { module, message })
-
-  -- Call a midi-type aware function like `input1_noteOn()`.
-  local midiType = midiTypeNames[message.type]
-  utils.callIfExists(
-    module[numberedInput .. '_' .. midiType],
-    { module, message }
-  )
-
-  -- Call a generic `input()` function that handles any input.
-  utils.callIfExists(module.input, { module, input, message })
 end
 
 ---Return a human readable name for debugging (e.g.: delay1)
@@ -101,18 +62,20 @@ function Module:_applyState(state)
   end
 end
 
+---Save the old module's type so we can restore it after a HMR.
+---@param OldModule Module
+---@return table
 function Module.__hmrDispose(OldModule)
-  -- The type is set by `Miwos.createModule()` therefore we have to transfer it.
   return { type = OldModule._type }
 end
 
+---Update all module instances after a HMR.
+---@param data table
+---@param module Module
 function Module.__hmrAccept(data, module)
-  if data then
+  if data and Miwos.activePatch then
     Miwos.activePatch:updateModule(data.type, module)
   end
-end
-
-function Module:destroy()
 end
 
 return Module

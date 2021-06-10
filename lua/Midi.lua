@@ -1,10 +1,15 @@
+-- The global Midi object might have already been created by c++.
 Midi = _G.Midi or {}
 
--- The global Midi object might have already been created by c++.
--- Midi = _G.Midi or {}
 Midi.TypeNoteOn = 1
 Midi.TypeNoteOff = 2
 Midi.TypeControlChange = 3
+
+Midi.typeNames = {
+  [Midi.TypeNoteOn] = 'noteOn',
+  [Midi.TypeNoteOff] = 'noteOff',
+  [Midi.TypeControlChange] = 'controlChange',
+}
 
 ---@alias MidiType "Midi.TypeNoteOn" | "Midi.TypeNoteOff" | "Midi.TypeControlChange"
 
