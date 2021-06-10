@@ -8,7 +8,7 @@ end
 
 function Hold:input1_noteOn(message)
   local time = Timer.now()
-  if (time - self.lastNoteTime > 100) then
+  if time - self.lastNoteTime > 100 then
     self:clear()
   end
   self:addNote(message.data)
