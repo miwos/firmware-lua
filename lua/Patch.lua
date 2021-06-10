@@ -11,7 +11,7 @@ local Patch = class()
 
 ---Initialize patch.
 ---@param args PatchArgs
-function Patch:construct(args)
+function Patch:constructor(args)
   self.types = args.types
   self.connections = args.connections
   self.interface = args.interface

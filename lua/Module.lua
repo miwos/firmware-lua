@@ -18,8 +18,8 @@ local Module = class(Node)
 ---See `Module#_applyState` and `Module#_saveState`.
 Module.__hmrKeep = {}
 
-function Module:construct()
-  Module.super.construct(self)
+function Module:constructor()
+  Module.super.constructor(self)
   self.props = {}
   utils.callIfExists(self.init, { self })
 end

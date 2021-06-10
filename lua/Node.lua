@@ -4,7 +4,7 @@ local utils = require('utils')
 ---@class Node
 local Node = class()
 
-function Node:construct()
+function Node:constructor()
   self._outputs = {}
 end
 
