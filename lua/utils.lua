@@ -27,4 +27,9 @@ function utils.getMidiNoteId(index, note)
   return note.data[1] .. '-' .. note.data[2] .. '-' .. note.data[3]
 end
 
+function utils.getUsedMemory()
+  collectgarbage('collect')
+  return collectgarbage('count')
+end
+
 return utils

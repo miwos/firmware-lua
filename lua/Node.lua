@@ -26,7 +26,7 @@ function Node:output(index, message)
   end
 
   local id, input = unpack(output)
-  local node = id == 0 and Miwos.output or Miwos:getModule(id)
+  local node = id == 0 and Miwos.output or Miwos.getModule(id)
   if not node then
     return
   end

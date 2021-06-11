@@ -54,7 +54,6 @@ end
 
 ---Finish unfinished midi notes to prevent midi panic.
 function Module:_finishNotes()
-  Log.dump(self._unfinishedNotes)
   for _, data in pairs(self._unfinishedNotes) do
     local output = data[1]
     Module.super.output(self, output, Midi.NoteOff(unpack(data, 2)))
@@ -97,6 +96,14 @@ function Module.__hmrAccept(data, module)
   if data and Miwos.activePatch then
     Miwos.activePatch:updateModule(data.type, module)
   end
+end
+
+---Decline a HMR if this file (the base class) is modified instead of an actual
+---module.
+---@return boolean - Wether or not to decline the HMR.
+function Module.__hmrDecline(_, module)
+  -- Only actual modules that inherit from Module have a `_type`.
+  return not module._type
 end
 
 function Module:_destroy()

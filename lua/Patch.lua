@@ -15,6 +15,7 @@ function Patch:constructor(args)
   self.types = args.types
   self.connections = args.connections
   self.interface = args.interface
+  ---@type table<string, Module>
   self.modules = {}
 
   self:_initModules()
@@ -78,6 +79,12 @@ function Patch:updateModule(type, NewModule)
   -- If we changed a module we have to redo the connections.
   if updatedModule then
     self:_makeConnections()
+  end
+end
+
+function Patch:destroy()
+  for _, module in pairs(self.modules) do
+    module:_destroy()
   end
 end
 

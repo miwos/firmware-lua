@@ -37,8 +37,8 @@ function Miwos.createModule(name)
   return newModule
 end
 
-function Miwos:getModule(id)
-  return self.activePatch and self.activePatch.modules[id] or nil
+function Miwos.getModule(id)
+  return Miwos.activePatch and Miwos.activePatch.modules[id] or nil
 end
 
 ---Load a patch from file.
@@ -49,6 +49,12 @@ function Miwos.loadPatch(name)
   local patch = Patch(data)
   patch:activate()
   return patch
+end
+
+function Miwos.destroy()
+  if Miwos.activePatch then
+    Miwos.activePatch:destroy()
+  end
 end
 
 return Miwos
