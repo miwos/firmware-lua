@@ -38,8 +38,8 @@ function Patch:_makeConnections()
   for _, connection in pairs(self.connections) do
     local fromId, output, toId, input = unpack(connection)
 
-    local fromModule = fromId == 0 and Miwos.input or self.modules[fromId]
-    fromModule:connect(output, toId, input)
+    local fromNode = fromId == 0 and Miwos.input or self.modules[fromId]
+    fromNode:connect(output, toId, input)
   end
 end
 
@@ -59,7 +59,7 @@ function Patch:_updateModuleInstance(id, module, NewModule)
   newModule:_applyState(state)
   newModule._id = id
   newModule._patch = self
-  utils.callIfExists(module.destroy, { module })
+  module:_destroy()
   self.modules[id] = newModule
 end
 

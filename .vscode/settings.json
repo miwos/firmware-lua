@@ -1,5 +1,5 @@
 {
-  "Lua.diagnostics.disable": ["trailing-space", "undefined-global"],
+  "Lua.diagnostics.globals": ["Log", "Display", "Midi", "Timer"],
   "editor.formatOnSave": true,
   "[lua]": {
     "editor.defaultFormatter": "JohnnyMorganz.stylua"

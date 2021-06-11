@@ -1,19 +1,20 @@
+local Node = require('Node')
 local Module = require('Module')
 local Patch = require('Patch')
 local class = require('class')
 
 Miwos = {
   ---@type Module
-  input = Module(),
+  input = Node(),
   ---@type Module
-  output = Module(),
+  output = Node(),
   ---@type Patch
   activePatch = nil,
 }
 
 ---Send midi message to midi devices.
 ---@param index number The midi device index.
----@param message table The midi message.
+---@param message MidiMessage The midi message.
 function Miwos.output:input(index, message)
   local actions = {
     [Midi.TypeNoteOn] = Midi.sendNoteOn,
@@ -23,8 +24,7 @@ function Miwos.output:input(index, message)
 
   local action = actions[message.type]
   if action then
-    -- Decrease index, because we use zero-based index in c++.
-    action(index - 1, unpack(message.data))
+    action(index, unpack(message.data))
   end
 end
 

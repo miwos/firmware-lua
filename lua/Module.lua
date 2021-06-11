@@ -12,6 +12,8 @@ local utils = require('utils')
 ---@field destroy function
 ---@field defineProps function
 ---@field props table
+---@field _saveState function
+---@field _destroy function
 
 local Module = class(Node)
 
@@ -21,6 +23,7 @@ Module.__hmrKeep = {}
 function Module:constructor()
   Module.super.constructor(self)
   self.props = {}
+  self._unfinishedNotes = {}
   utils.callIfExists(self.init, { self })
 end
 
@@ -28,6 +31,19 @@ end
 ---@param props table<string, Prop>
 function Module:defineProps(props)
   self.props = Props(self, props)
+end
+
+---Send data to output.
+---@param index number The output index.
+---@param message table The midi message to send.
+function Module:output(index, message)
+  local type = message.type
+  if type == Midi.TypeNoteOn or type == Midi.TypeNoteOff then
+    local key = index .. utils.getMidiNoteId(index, message)
+    self._unfinishedNotes[key] = type == Midi.TypeNoteOn and { index, unpack(message.data) }
+      or nil
+  end
+  Module.super.output(self, index, message)
 end
 
 ---Return a human readable name for debugging (e.g.: delay1)
@@ -38,6 +54,11 @@ end
 
 ---Finish unfinished midi notes to prevent midi panic.
 function Module:_finishNotes()
+  Log.dump(self._unfinishedNotes)
+  for _, data in pairs(self._unfinishedNotes) do
+    local output = data[1]
+    Module.super.output(self, output, Midi.NoteOff(unpack(data, 2)))
+  end
 end
 
 ---Save the module instance's state. Only properties defined in `__hmrKeep` are
@@ -76,6 +97,11 @@ function Module.__hmrAccept(data, module)
   if data and Miwos.activePatch then
     Miwos.activePatch:updateModule(data.type, module)
   end
+end
+
+function Module:_destroy()
+  self:_finishNotes()
+  utils.callIfExists(self.destroy, { self })
 end
 
 return Module

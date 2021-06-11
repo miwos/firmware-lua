@@ -15,6 +15,7 @@ Midi.typeNames = {
 
 ---@class MidiMessage
 ---@field type MidiType
+---@field data number[]
 
 ---@class MidiNoteOn : MidiMessage
 ---@field data number[] note, velocity, channel
