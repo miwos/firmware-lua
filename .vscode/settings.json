@@ -1,6 +1,7 @@
 {
   "Lua.diagnostics.globals": ["Log", "Display", "Midi", "Timer"],
   "editor.formatOnSave": true,
+  "Lua.runtime.version": "Lua 5.1",
   "[lua]": {
     "editor.defaultFormatter": "JohnnyMorganz.stylua"
   }
