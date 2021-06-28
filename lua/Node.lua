@@ -2,6 +2,7 @@ local class = require('class')
 local utils = require('utils')
 
 ---@class Node
+---@field _outputs table
 local Node = class()
 
 function Node:constructor()
