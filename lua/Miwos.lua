@@ -1,32 +1,11 @@
-local Node = require('Node')
-local Module = require('Module')
 local Patch = require('Patch')
 local class = require('class')
+local Module = require('Module')
 
 Miwos = {
-  ---@type Module
-  input = Node(),
-  ---@type Module
-  output = Node(),
   ---@type Patch
   activePatch = nil,
 }
-
----Send midi message to midi devices.
----@param index number The midi device index.
----@param message MidiMessage The midi message.
-function Miwos.output:input(index, message)
-  local actions = {
-    [Midi.TypeNoteOn] = Midi.sendNoteOn,
-    [Midi.TypeNoteOff] = Midi.sendNoteOff,
-    [Midi.TypeControlChange] = Midi.sendControlChange,
-  }
-
-  local action = actions[message.type]
-  if action then
-    action(index, unpack(message.data))
-  end
-end
 
 ---Return a new module class.
 ---@param name string

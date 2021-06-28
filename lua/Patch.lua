@@ -2,6 +2,9 @@ local class = require('class')
 local utils = require('utils')
 
 ---@class Patch
+---@field connections number[]
+---@field types table<string, Module> Module can be an instance or a constructor.
+---@field modules table<string, Module> Module is an instance.
 local Patch = class()
 
 ---@class PatchArgs
@@ -20,14 +23,12 @@ function Patch:constructor(args)
 
   self:_initModules()
   self:_makeConnections()
-  Miwos.input._patch = self
-  Miwos.output._patch = self
 end
 
 ---Initialize modules.
 function Patch:_initModules()
-  for id, Module in pairs(self.types) do
-    local module = Module()
+  for id, constructor in pairs(self.types) do
+    local module = constructor()
     module._id = id
     module._patch = self
     self.modules[id] = module
@@ -38,9 +39,7 @@ end
 function Patch:_makeConnections()
   for _, connection in pairs(self.connections) do
     local fromId, output, toId, input = unpack(connection)
-
-    local fromNode = fromId == 0 and Miwos.input or self.modules[fromId]
-    fromNode:connect(output, toId, input)
+    self.modules[fromId]:connect(output, toId, input)
   end
 end
 
@@ -56,11 +55,13 @@ end
 ---@param NewModule Module
 function Patch:_updateModuleInstance(id, module, NewModule)
   local state = module:_saveState()
+  module:_destroy()
+
   local newModule = NewModule()
   newModule:_applyState(state)
   newModule._id = id
   newModule._patch = self
-  module:_destroy()
+
   self.modules[id] = newModule
 end
 
