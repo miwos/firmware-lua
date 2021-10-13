@@ -26,8 +26,17 @@ end
 function Miwos.loadPatch(name)
   local data = loadfile('lua/patches/' .. name .. '.lua')
   local patch = Patch(data)
+  patch.name = name
   patch:activate()
   return patch
+end
+
+function Miwos.updatePatch(name)
+  Log.info(Miwos.activePatch)
+  if Miwos.activePatch and Miwos.activePatch.name == name then
+    local data = loadfile('lua/patches/' .. name .. '.lua')
+    Miwos.activePatch:update(data)
+  end
 end
 
 function Miwos.destroy()

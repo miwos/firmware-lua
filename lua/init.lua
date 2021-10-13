@@ -6,3 +6,4 @@ require('Prop')
 require('Interface')
 
 Miwos.loadPatch('patch1')
+Miwos:updatePatch('patch1')

@@ -3,7 +3,7 @@ local Chorder = Miwos.createModule('Chorder')
 
 function Chorder:init()
   self:defineProps({
-    pitch1 = Prop.Number({ default = 12, min = -12, max = 12, step = 1 }),
+    pitch1 = Prop.Number({ default = 6, min = -12, max = 12, step = 1 }),
     pitch2 = Prop.Number({ default = -12, min = -12, max = 12, step = 1 }),
   })
 

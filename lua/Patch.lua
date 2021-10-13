@@ -2,22 +2,23 @@ local class = require('class')
 local utils = require('utils')
 
 ---@class Patch
+---@field name string Same as file name, will be set by `Miwos.loadPatch()`.
 ---@field connections number[]
 ---@field types table<string, Module> Module can be an instance or a constructor.
 ---@field modules table<string, Module> Module is an instance.
 local Patch = class()
 
----@class PatchArgs
+---@class PatchData
 ---@field types table<string, Module>
 ---@field connections number[]
 ---@field interface table
 
 ---Initialize patch.
----@param args PatchArgs
-function Patch:constructor(args)
-  self.types = args.types
-  self.connections = args.connections
-  self.interface = args.interface
+---@param data PatchData
+function Patch:constructor(data)
+  self.types = data.types
+  self.connections = data.connections
+  self.interface = data.interface
   ---@type table<string, Module>
   self.modules = {}
 
@@ -28,10 +29,12 @@ end
 ---Initialize modules.
 function Patch:_initModules()
   for id, constructor in pairs(self.types) do
-    local module = constructor()
-    module._id = id
-    module._patch = self
-    self.modules[id] = module
+    if not self.modules[id] then
+      local module = constructor()
+      module._id = id
+      module._patch = self
+      self.modules[id] = module
+    end
   end
 end
 
@@ -46,6 +49,36 @@ end
 ---Activate the patch and initialize the encoders.
 function Patch:activate()
   Miwos.activePatch = self
+  Interface:patchChange(self)
+end
+
+function Patch:update(data)
+  Log.info('update (inside patch)')
+  -- Remove old modules that are not part of the updated patch.
+  local removeIds = {}
+  for id in pairs(self.modules) do
+    if not data.types[id] then
+      table.insert(removeIds, id)
+    end
+  end
+  for _, id in pairs(removeIds) do
+    self.modules[id] = nil
+  end
+
+  -- Now we can update the types and initialize all modules that were not
+  -- already part of the old patch.
+  self.types = data.types
+  self:_initModules()
+
+  -- Clear and redo all connections (in case something changed).
+  for _, module in pairs(self.modules) do
+    module:clearConnections()
+  end
+  self.connections = data.connections
+  self:_makeConnections()
+
+  -- Finally, update the interface.
+  self.interface = data.interface
   Interface:patchChange(self)
 end
 

@@ -14,6 +14,9 @@ end
 ---@param prop Prop The prop that has changed.
 function Interface:propChange(prop)
   local patch = Miwos.activePatch
+  if not patch.interface then
+    return
+  end
 
   local encoders = patch.interface.page1.encoders
   for index, encoder in pairs(encoders) do
@@ -25,6 +28,10 @@ end
 
 ---@param patch Patch
 function Interface:patchChange(patch)
+  if not patch.interface then
+    return
+  end
+
   local encoders = patch.interface.page1.encoders
   for index, encoder in ipairs(encoders) do
     local moduleId, propName = unpack(encoder)

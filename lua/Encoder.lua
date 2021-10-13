@@ -7,6 +7,10 @@ Encoder.max = 127
 function Encoder.handleChange(index, value)
   local patch = Miwos.activePatch
 
+  if not patch.interface then
+    return
+  end
+
   if not patch then
     return
   end

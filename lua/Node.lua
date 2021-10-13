@@ -17,6 +17,11 @@ function Node:connect(output, nodeId, nodeInput)
   self._outputs[output] = { nodeId, nodeInput }
 end
 
+---Clear all connections.
+function Node:clearConnections()
+  self._outputs = {}
+end
+
 ---Send data to output.
 ---@param index number The output index.
 ---@param message table The midi message to send.

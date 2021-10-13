@@ -1,9 +1,12 @@
 {
   "type": "module",
   "scripts": {
-    "dev": "node ./scripts/sync-files.js"
+    "dev": "node --trace-uncaught ./scripts/sync-files.js"
   },
   "dependencies": {
     "lua-on-arduino": "file:../../lua-on-arduino/desktop"
+  },
+  "devDependencies": {
+    "chokidar": "^3.5.2"
   }
 }

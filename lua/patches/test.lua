@@ -6,10 +6,12 @@ return {
   types = {
     [1] = Input,
     [2] = Output,
+    [3] = Chorder,
   },
 
   connections = {
-    { 1, 1, 2, 1 },
+    { 1, 1, 3, 1 },
+    { 3, 1, 2, 1 },
   },
 
   interface = {
