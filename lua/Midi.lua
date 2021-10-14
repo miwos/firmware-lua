@@ -12,7 +12,7 @@ Midi.typeNames = {
   [Midi.TypeControlChange] = 'controlChange',
 }
 
-Midi.inputHandler = nil
+Midi.inputListeners = {}
 
 ---@alias MidiType "Midi.TypeNoteOn" | "Midi.TypeNoteOff" | "Midi.TypeControlChange"
 
@@ -29,19 +29,35 @@ Midi.inputHandler = nil
 ---@class MidiControlChange: MidiMessage
 ---@field data number[] control, value, channel
 
+function Midi.addInputListener(listener)
+  table.insert(Midi.inputListeners, listener)
+end
+
+function Midi.removeInputListener(listener)
+  for i = 1, #Midi.inputListeners do
+    if Midi.inputListeners[i] == listener then
+      table.remove(Midi.inputListeners, i)
+      break
+    end
+  end
+end
+
 ---@return MidiNoteOn
-function Midi.NoteOn(note, velocity, channel)
-  return Midi.Message(Midi.TypeNoteOn, { note, velocity, channel })
+function Midi.NoteOn(note, velocity, channel, cable)
+  return Midi.Message(Midi.TypeNoteOn, { note, velocity, channel, cable })
 end
 
 ---@return MidiNoteOff
-function Midi.NoteOff(note, velocity, channel)
-  return Midi.Message(Midi.TypeNoteOff, { note, velocity, channel })
+function Midi.NoteOff(note, velocity, channel, cable)
+  return Midi.Message(Midi.TypeNoteOff, { note, velocity, channel, cable })
 end
 
 ---@return MidiControlChange
-function Midi.ControlChange(control, value, channel)
-  return Midi.Message(Midi.TypeControlChange, { control, value, channel })
+function Midi.ControlChange(control, value, channel, cable)
+  return Midi.Message(
+    Midi.TypeControlChange,
+    { control, value, channel, cable }
+  )
 end
 
 function Midi.Message(type, data)
@@ -51,19 +67,14 @@ function Midi.Message(type, data)
   end
 end
 
-function Midi.setInputHandler(handler)
-  Midi.inputHandler = handler
-end
-
-function Midi.removeInputHandler()
-  Midi.inputHandler = nil
-end
-
 -- Receive midi functions from c++:
 
-function Midi.handleInput(index, type, data1, data2, channel)
-  local message = Midi.Message(type, { data1, data2, channel })
+function Midi.handleInput(index, type, data1, data2, channel, cable)
+  local message = Midi.Message(type, { data1, data2, channel, cable })
+
   if message then
-    utils.callIfExists(Midi.inputHandler, { index, message })
+    for i = 1, #Midi.inputListeners do
+      utils.callIfExists(Midi.inputListeners[i], { index, message })
+    end
   end
 end

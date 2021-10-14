@@ -2,9 +2,11 @@
 local Input = Miwos.createModule('Input')
 
 function Input:init()
-  Midi.setInputHandler(function(...)
+  self.inputListener = function(...)
     self:handleInput(...)
-  end)
+  end
+
+  Midi.addInputListener(self.inputListener)
 end
 
 function Input:handleInput(index, message)
@@ -12,7 +14,7 @@ function Input:handleInput(index, message)
 end
 
 function Input:destroy()
-  Midi.removeInputHandler()
+  Midi.removeInputListener(self.inputListener)
 end
 
 return Input
