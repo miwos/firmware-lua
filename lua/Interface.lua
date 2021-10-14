@@ -6,14 +6,14 @@ Interface = {
 ---@param displayIndex any
 ---@param prop table
 function Interface:_displayProp(displayIndex, prop)
-  Display.write(displayIndex, prop.name .. ': ' .. prop:getDisplayValue())
+  Displays.write(displayIndex, prop.name .. ': ' .. prop:getDisplayValue())
 end
 
 ---Check if the prop is mentioned in the interface description of the patch, and
 ---if so, write the prop in the corresponding display.
 ---@param prop Prop The prop that has changed.
 function Interface:propChange(prop)
-  local patch = Miwos.activePatch
+  local patch = Patches.activePatch
   if not patch.interface then
     return
   end
@@ -38,7 +38,7 @@ function Interface:patchChange(patch)
     local module = patch.modules[moduleId]
     local prop = module and module.props._props[propName]
     if prop then
-      Encoder.write(index, prop:getRawValue())
+      Encoders.write(index, prop:getRawValue())
       self:_displayProp(index, prop)
     end
   end

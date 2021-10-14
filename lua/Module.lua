@@ -94,8 +94,8 @@ end
 ---@param data table
 ---@param module Module
 function Module.__hmrAccept(data, module)
-  if data and Miwos.activePatch then
-    Miwos.activePatch:updateModule(data.type, module)
+  if data and Patches.activePatch then
+    Patches.activePatch:updateModule(data.type, module)
   end
 end
 

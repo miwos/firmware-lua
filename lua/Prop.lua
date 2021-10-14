@@ -50,8 +50,8 @@ end
 function Prop.Number:decodeValue(rawValue)
   local scaledValue = utils.mapValue(
     rawValue,
-    Encoder.min,
-    Encoder.max,
+    Encoders.min,
+    Encoders.max,
     self.min,
     self.max
   )
@@ -64,14 +64,12 @@ end
 ---@param value any
 ---@return any
 function Prop.Number:encodeValue(value)
-  return utils.mapValue(value, self.min, self.max, Encoder.min, Encoder.max)
+  return utils.mapValue(value, self.min, self.max, Encoders.min, Encoders.max)
 end
 
 ---Return a string representation of the value.
 ---@return string
 function Prop.Number:getDisplayValue()
-  return utils.isInt(self.step) and tostring(self.value) or string.format(
-    '%.2f',
-    self.value
-  )
+  return utils.isInt(self.step) and tostring(self.value)
+    or string.format('%.2f', self.value)
 end

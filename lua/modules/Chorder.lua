@@ -1,5 +1,5 @@
 ---@class ModuleChorder : Module
-local Chorder = Miwos.createModule('Chorder')
+local Chorder = Modules.create('Chorder')
 
 function Chorder:init()
   self:defineProps({

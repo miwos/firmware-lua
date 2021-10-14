@@ -1,5 +1,5 @@
 ---@class ModuleInput : Module
-local Input = Miwos.createModule('Input')
+local Input = Modules.create('Input')
 
 function Input:init()
   self.inputListener = function(...)

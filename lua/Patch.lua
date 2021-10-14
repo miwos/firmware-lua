@@ -1,12 +1,13 @@
 local class = require('class')
-local utils = require('utils')
 
 ---@class Patch
----@field name string Same as file name, will be set by `Miwos.loadPatch()`.
+---@field activePatch Patch
+---@field name string Same as file name, will be set by `Patches.loadPatch()`.
 ---@field connections number[]
 ---@field types table<string, Module> Module can be an instance or a constructor.
 ---@field modules table<string, Module> Module is an instance.
 local Patch = class()
+Patch.activePatch = nil
 
 ---@class PatchData
 ---@field types table<string, Module>
@@ -48,12 +49,29 @@ end
 
 ---Activate the patch and initialize the encoders.
 function Patch:activate()
-  Miwos.activePatch = self
+  Patches.activePatch = self
   Interface:patchChange(self)
 end
 
+function Patch:changeProp(moduleId, propName, value, valueIsRaw)
+  local module = self.modules[moduleId]
+  if not module then
+    return
+  end
+
+  local prop = module.props._props[propName]
+  if not prop then
+    return
+  end
+
+  if valueIsRaw then
+    prop:setRawValue(value)
+  else
+    prop:setValue(value)
+  end
+end
+
 function Patch:update(data)
-  Log.info('update (inside patch)')
   -- Remove old modules that are not part of the updated patch.
   local removeIds = {}
   for id in pairs(self.modules) do

@@ -1,5 +1,5 @@
 ---@class Pitcher : Module
-local Pitcher = Miwos.createModule('Pitcher')
+local Pitcher = Modules.create('Pitcher')
 
 function Pitcher:init()
   self:defineProps({

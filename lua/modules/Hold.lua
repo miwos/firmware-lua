@@ -1,5 +1,5 @@
 ---@class ModuleHold : Module
-local Hold = Miwos.createModule('Hold')
+local Hold = Modules.create('Hold')
 
 function Hold:init()
   self.notes = {}

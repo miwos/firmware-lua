@@ -1,5 +1,5 @@
 {
-  "Lua.diagnostics.globals": ["Log", "Display", "Midi", "Timer"],
+  "Lua.diagnostics.globals": ["Log", "Displays", "Midi", "Timer", "Patches", "Modules"],
   "Lua.runtime.version": "Lua 5.1",
   "[lua]": {
     "editor.formatOnSave": true,

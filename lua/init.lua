@@ -1,8 +1,10 @@
 require('Timer')
-require('Encoder')
+require('Encoders')
 require('Midi')
-require('Miwos')
 require('Prop')
 require('Interface')
+require('Patches')
+require('Modules')
+require('Miwos')
 
-Miwos.loadPatch('patch1')
+Patches.load('patch1')

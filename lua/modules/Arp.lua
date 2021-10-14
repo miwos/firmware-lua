@@ -1,7 +1,7 @@
 local utils = require('utils')
 
 ---@class ModuleArp : Module
-local Arp = Miwos.createModule('Arp')
+local Arp = Modules.create('Arp')
 
 Arp.minGateDuration = 5 -- ms
 

@@ -1,5 +1,5 @@
 ---@class Delay : Module
-local Delay = Miwos.createModule('Delay')
+local Delay = Modules.create('Delay')
 
 Delay:defineProps({
   time = Prop.Number({ default = 500, min = 0, max = 1000 }),
