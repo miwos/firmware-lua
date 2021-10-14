@@ -7,7 +7,6 @@ local class = require('class')
 ---@field types table<string, Module> Module can be an instance or a constructor.
 ---@field modules table<string, Module> Module is an instance.
 local Patch = class()
-Patch.activePatch = nil
 
 ---@class PatchData
 ---@field types table<string, Module>

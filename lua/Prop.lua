@@ -20,6 +20,7 @@ function PropBase:setValue(value)
   self.value = value
   utils.callIfExists(self.onChange, { value })
   Interface:propChange(self)
+  Bridge.sendPropChange(self.module._id, self.name, self.value)
 end
 
 function PropBase:getRawValue()

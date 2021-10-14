@@ -22,3 +22,12 @@ function Patches.update(name)
     Patches.activePatch:update(data)
   end
 end
+
+function Patches.changeProp(moduleId, propName, value)
+  local patch = Patches.activePatch
+  if not patch then
+    return
+  end
+
+  patch:changeProp(moduleId, propName, value)
+end

@@ -18,10 +18,12 @@ function Interface:propChange(prop)
     return
   end
 
-  local encoders = patch.interface.page1.encoders
+  local encoders = patch.interface[1].encoders
   for index, encoder in pairs(encoders) do
     if encoder[1] == prop.module._id and encoder[2] == prop.name then
       self:_displayProp(index, prop)
+      Encoders.write(index, prop:getRawValue())
+      break
     end
   end
 end
@@ -32,14 +34,23 @@ function Interface:patchChange(patch)
     return
   end
 
-  local encoders = patch.interface.page1.encoders
+  local encoders = patch.interface[1].encoders
   for index, encoder in ipairs(encoders) do
     local moduleId, propName = unpack(encoder)
     local module = patch.modules[moduleId]
-    local prop = module and module.props._props[propName]
-    if prop then
-      Encoders.write(index, prop:getRawValue())
-      self:_displayProp(index, prop)
+
+    if not module then
+      Log.warning('Module #' .. moduleId .. " doesn't exist.")
+      return
     end
+
+    local prop = module.props._props[propName]
+    if not prop then
+      Log.warning('Prop `' .. propName .. "` doesn't exist.")
+      return
+    end
+
+    Encoders.write(index, prop:getRawValue())
+    self:_displayProp(index, prop)
   end
 end

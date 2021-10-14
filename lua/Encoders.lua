@@ -15,7 +15,7 @@ function Encoders.handleChange(index, rawValue)
     return
   end
 
-  local encoders = patch.interface.page1.encoders
+  local encoders = patch.interface[1].encoders
   local encoder = encoders[index]
   if not encoder then
     return
