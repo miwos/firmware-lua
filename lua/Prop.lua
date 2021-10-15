@@ -16,10 +16,15 @@ function PropBase:getValue()
   return self.value
 end
 
-function PropBase:setValue(value)
+function PropBase:setValue(value, writeValue)
+  -- By default we write the value to the encoder as soon as the
+  -- prop changes. in `Prop#setRawvalue()` we deactivate this behaviour, because
+  -- the raw value comes from the encoder, so no need to write it again.
+  writeValue = writeValue == nil and true or writeValue
+
   self.value = value
   utils.callIfExists(self.onChange, { value })
-  Interface:propChange(self)
+  Interface:propChange(self, writeValue)
   Bridge.sendPropChange(self.module._id, self.name, self.value)
 end
 
@@ -28,7 +33,7 @@ function PropBase:getRawValue()
 end
 
 function PropBase:setRawValue(rawValue)
-  self:setValue(self:decodeValue(rawValue))
+  self:setValue(self:decodeValue(rawValue), false)
 end
 
 ---@class PropNumber : Prop
@@ -71,6 +76,6 @@ end
 ---Return a string representation of the value.
 ---@return string
 function Prop.Number:getDisplayValue()
-  return utils.isInt(self.step) and tostring(self.value)
+  return utils.isInt(self.step) and string.format('%i', self.value)
     or string.format('%.2f', self.value)
 end

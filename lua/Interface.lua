@@ -12,7 +12,7 @@ end
 ---Check if the prop is mentioned in the interface description of the patch, and
 ---if so, write the prop in the corresponding display.
 ---@param prop Prop The prop that has changed.
-function Interface:propChange(prop)
+function Interface:propChange(prop, writeValue)
   local patch = Patches.activePatch
   if not patch.interface then
     return
@@ -22,7 +22,9 @@ function Interface:propChange(prop)
   for index, encoder in pairs(encoders) do
     if encoder[1] == prop.module._id and encoder[2] == prop.name then
       self:_displayProp(index, prop)
-      Encoders.write(index, prop:getRawValue())
+      if writeValue then
+        Encoders.write(index, prop:getRawValue())
+      end
       break
     end
   end
