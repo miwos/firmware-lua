@@ -19,9 +19,11 @@ Midi.inputListeners = {}
 ---@class MidiMessage
 ---@field type MidiType
 ---@field data number[]
+---@field channel number
+---@field cable number
 
 ---@class MidiNoteOn : MidiMessage
----@field data number[] note, velocity, channel
+---@field data number[] note, velocity
 
 ---@class MidiNoteOff : MidiMessage
 ---@field data number[] note, velocity, channel
@@ -44,33 +46,35 @@ end
 
 ---@return MidiNoteOn
 function Midi.NoteOn(note, velocity, channel, cable)
-  return Midi.Message(Midi.TypeNoteOn, { note, velocity, channel, cable })
+  return Midi.Message(Midi.TypeNoteOn, note, velocity, channel, cable)
 end
 
 ---@return MidiNoteOff
 function Midi.NoteOff(note, velocity, channel, cable)
-  return Midi.Message(Midi.TypeNoteOff, { note, velocity, channel, cable })
+  return Midi.Message(Midi.TypeNoteOff, note, velocity, channel, cable)
 end
 
 ---@return MidiControlChange
 function Midi.ControlChange(control, value, channel, cable)
-  return Midi.Message(
-    Midi.TypeControlChange,
-    { control, value, channel, cable }
-  )
+  return Midi.Message(Midi.TypeControlChange, control, value, channel, cable)
 end
 
-function Midi.Message(type, data)
+function Midi.Message(type, data1, data2, channel, cable)
   -- `Midi.typeNames` contains all supported midi message types as keys.
   if Midi.typeNames[type] ~= nil then
-    return { type = type, data = data }
+    return {
+      type = type,
+      data = { data1, data2 },
+      channel = channel or 1,
+      cable = cable or 1,
+    }
   end
 end
 
 -- Receive midi functions from c++:
 
 function Midi.handleInput(index, type, data1, data2, channel, cable)
-  local message = Midi.Message(type, { data1, data2, channel, cable })
+  local message = Midi.Message(type, data1, data2, channel, cable)
 
   if message then
     for i = 1, #Midi.inputListeners do

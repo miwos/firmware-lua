@@ -10,5 +10,5 @@ import LuaOnArduino from 'lua-on-arduino'
 
   // await loa.updateFile('lua/init.lua');
 
-  await loa.syncFiles('lua/**/*.lua', { watch: true, override: true })
+  await loa.syncFiles('lua/**/*', { watch: true, override: true })
 })()

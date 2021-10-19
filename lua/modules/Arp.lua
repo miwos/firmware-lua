@@ -35,7 +35,7 @@ function Arp:input1_noteOn(message)
     self:clear()
   end
 
-  self:addNote(message.data)
+  self:addNote({ message.data[1], message.data[2], message.channel })
   self.lastNoteTime = time
 
   if not self.playing then

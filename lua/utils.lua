@@ -24,7 +24,7 @@ end
 ---Get an id for the specific note in format 'note-velocity-channel'
 ---@param note MidiNoteOn|MidiNoteOff
 function utils.getMidiNoteId(note)
-  return note.data[1] .. '-' .. note.data[2] .. '-' .. note.data[3]
+  return note.data[1] .. '-' .. note.data[2] .. '-' .. note.channel
 end
 
 function utils.getUsedMemory()
