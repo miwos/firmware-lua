@@ -11,6 +11,7 @@ local Patch = class()
 ---@class PatchData
 ---@field types table<string, Module>
 ---@field connections number[]
+---@field props table<number, table<string, number>>
 ---@field interface table
 
 ---Initialize patch.
@@ -19,8 +20,10 @@ function Patch:constructor(data)
   self.types = data.types
   self.connections = data.connections
   self.interface = data.interface
+  self.props = data.props
   ---@type table<string, Module>
   self.modules = {}
+  self.hasInitializedProps = false
 
   self:_initModules()
   self:_makeConnections()
@@ -46,10 +49,23 @@ function Patch:_makeConnections()
   end
 end
 
+function Patch:_initializeProps()
+  if self.props then
+    for moduleId, moduleProps in pairs(self.props) do
+      for propName, value in pairs(moduleProps) do
+        self:changeProp(moduleId, propName, value)
+      end
+    end
+  end
+end
+
 ---Activate the patch and initialize the encoders.
 function Patch:activate()
   Patches.activePatch = self
   Interface:patchChange(self)
+  if not self.hasInitializedProps then
+    self:_initializeProps()
+  end
 end
 
 function Patch:changeProp(moduleId, propName, value, valueIsRaw)
