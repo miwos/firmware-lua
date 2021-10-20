@@ -6,4 +6,8 @@ function Miwos.destroy()
   end
 end
 
+function Miwos.getMemoryUsage()
+  return collectgarbage('count')
+end
+
 return Miwos
