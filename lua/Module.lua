@@ -38,9 +38,9 @@ end
 ---@param message table The midi message to send.
 function Module:output(index, message)
   local type = message.type
-  if type == Midi.TypeNoteOn or type == Midi.TypeNoteOff then
+  if type == Midi.NoteOn.type or type == Midi.NoteOff.type then
     local key = index .. utils.getMidiNoteId(message)
-    self._unfinishedNotes[key] = type == Midi.TypeNoteOn
+    self._unfinishedNotes[key] = type == Midi.NoteOn.type
         and {
           index,
           message.note,

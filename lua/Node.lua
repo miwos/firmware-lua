@@ -24,7 +24,7 @@ end
 
 ---Send data to output.
 ---@param index number The output index.
----@param message table The midi message to send.
+---@param message MidiMessage The midi message to send.
 function Node:output(index, message)
   local output = self._outputs[index]
   if not output then
@@ -42,7 +42,7 @@ function Node:output(index, message)
   utils.callIfExists(node[numberedInput], { node, message })
 
   -- Call a midi-type aware function like `input1_noteOn()`.
-  local midiTypeName = Midi.typeNames[message.type]
+  local midiTypeName = message.name
   utils.callIfExists(
     node[numberedInput .. '_' .. midiTypeName],
     { node, message }

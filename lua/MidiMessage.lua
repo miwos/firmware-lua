@@ -1,8 +1,10 @@
 local class = require('class')
 
 ---@class MidiMessage
----@field type MidiType Will be defined by descendants.
----@field keys table Will be defined by descendants.
+---@field type MidiType The midi type.
+---@field name string A human readable midi type name (e.g.: 'noteOn').
+---@field keys table Name aliases for midi data1 and data2 (e.g.: for a noteOn
+---message this would be `{ 'note', 'velocity' }`).
 local MidiMessage = class()
 
 function MidiMessage:constructor(data1, data2, channel)
