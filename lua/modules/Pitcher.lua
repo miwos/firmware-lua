@@ -1,6 +1,6 @@
 local utils = require('utils')
 
----@class Pitcher : Module
+---@class ModulePitcher : Module
 local Pitcher = Modules.create('Pitcher')
 
 function Pitcher:init()

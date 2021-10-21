@@ -1,5 +1,5 @@
 local class = require('class')
-local MidiMessage = require('MidiMessage')
+local MidiMessage = require('Midi.MidiMessage')
 
 local function messageFactory(type, name, keys)
   local Message = class(MidiMessage)

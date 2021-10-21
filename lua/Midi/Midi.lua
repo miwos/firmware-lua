@@ -1,5 +1,5 @@
 local utils = require('utils')
-local MidiMessages = require('MidiMessages')
+local MidiMessages = require('Midi.MidiMessages')
 
 -- The global Midi object might have already been created by c++.
 Midi = _G.Midi or {}

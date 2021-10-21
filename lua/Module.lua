@@ -1,6 +1,6 @@
 local class = require('class')
 local Node = require('Node')
-local Props = require('Props')
+local Props = require('Props.Props')
 local utils = require('utils')
 
 ---@class Module : Node
