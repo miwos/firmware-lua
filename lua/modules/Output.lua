@@ -7,9 +7,11 @@ function Output:init()
   })
 end
 
+---@param index number
+---@param message MidiMessage
 function Output:input(index, message)
-  message.data[4] = self.props.cable
-  Midi.send(index, message.type, unpack(message.data))
+  local data1, data2, channel = unpack(message:serialize())
+  Midi.send(index, message.type, data1, data2, channel, self.props.cable)
 end
 
 return Output

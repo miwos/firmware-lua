@@ -12,15 +12,16 @@ function Chorder:init()
   self.outputs = 1
 end
 
-function Chorder:input1_noteOn(message)
-  self:output(1, message)
-  local note, velocity, channel = unpack(message.data)
-  self:sendChordNote(note + self.props.pitch1, velocity, channel)
-  self:sendChordNote(note + self.props.pitch2, velocity, channel)
+---@param note MidiNoteOn
+function Chorder:input1_noteOn(note)
+  self:output(1, note)
+  self:sendChordNote(note.note + self.props.pitch1, note.velocity, note.channel)
+  self:sendChordNote(note.note + self.props.pitch2, note.velocity, note.channel)
 end
 
-function Chorder:input1_noteOff(message)
-  self:output(1, message)
+---@param note MidiNoteOn
+function Chorder:input1_noteOff(note)
+  self:output(1, note)
   self:clear()
 end
 

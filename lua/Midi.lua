@@ -1,4 +1,6 @@
 local utils = require('utils')
+local MidiMessage = require('MidiMessage')
+
 -- The global Midi object might have already been created by c++.
 Midi = _G.Midi or {}
 
@@ -6,6 +8,7 @@ Midi.TypeNoteOff = 0x80
 Midi.TypeNoteOn = 0x90
 Midi.TypeControlChange = 0xB0
 
+---@alias MidiType "Midi.TypeNoteOn" | "Midi.TypeNoteOff" | "Midi.TypeControlChange"
 Midi.typeNames = {
   [Midi.TypeNoteOn] = 'noteOn',
   [Midi.TypeNoteOff] = 'noteOff',
@@ -14,22 +17,32 @@ Midi.typeNames = {
 
 Midi.inputListeners = {}
 
----@alias MidiType "Midi.TypeNoteOn" | "Midi.TypeNoteOff" | "Midi.TypeControlChange"
-
----@class MidiMessage
----@field type MidiType
----@field data number[]
----@field channel number
----@field cable number
-
 ---@class MidiNoteOn : MidiMessage
----@field data number[] note, velocity
+---@field note number
+---@field velocity number
+Midi.NoteOn = class(MidiMessage)
+Midi.NoteOn.type = Midi.TypeNoteOn
+Midi.NoteOn.keys = { 'note', 'velocity' }
 
 ---@class MidiNoteOff : MidiMessage
----@field data number[] note, velocity, channel
+---@field note number
+---@field velocity number
+Midi.NoteOff = class(MidiMessage)
+Midi.NoteOff.type = Midi.TypeNoteOff
+Midi.NoteOff.keys = { 'note', 'velocity' }
 
----@class MidiControlChange: MidiMessage
----@field data number[] control, value, channel
+---@class MidiControlChange : MidiMessage
+---@field controler number
+---@field value number
+Midi.ControlChange = class(MidiMessage)
+Midi.ControlChange.type = Midi.TypeControlChange
+Midi.ControlChange.keys = { 'controler', 'value' }
+
+local typeMessageDict = {
+  [Midi.TypeNoteOn] = Midi.NoteOn,
+  [Midi.TypeNoteOff] = Midi.NoteOff,
+  [Midi.TypeControlChange] = Midi.ControlChange,
+}
 
 function Midi.addInputListener(listener)
   table.insert(Midi.inputListeners, listener)
@@ -44,41 +57,16 @@ function Midi.removeInputListener(listener)
   end
 end
 
----@return MidiNoteOn
-function Midi.NoteOn(note, velocity, channel, cable)
-  return Midi.Message(Midi.TypeNoteOn, note, velocity, channel, cable)
-end
-
----@return MidiNoteOff
-function Midi.NoteOff(note, velocity, channel, cable)
-  return Midi.Message(Midi.TypeNoteOff, note, velocity, channel, cable)
-end
-
----@return MidiControlChange
-function Midi.ControlChange(control, value, channel, cable)
-  return Midi.Message(Midi.TypeControlChange, control, value, channel, cable)
-end
-
-function Midi.Message(type, data1, data2, channel, cable)
-  -- `Midi.typeNames` contains all supported midi message types as keys.
-  if Midi.typeNames[type] ~= nil then
-    return {
-      type = type,
-      data = { data1, data2 },
-      channel = channel or 1,
-      cable = cable or 1,
-    }
+function Midi.handleInput(index, messageType, data1, data2, channel, cable)
+  local Message = typeMessageDict[messageType]
+  if Message == nil then
+    return
   end
-end
 
--- Receive midi functions from c++:
+  local message = Message()
+  message:deserialize(data1, data2, channel)
 
-function Midi.handleInput(index, type, data1, data2, channel, cable)
-  local message = Midi.Message(type, data1, data2, channel, cable)
-
-  if message then
-    for i = 1, #Midi.inputListeners do
-      utils.callIfExists(Midi.inputListeners[i], { index, message })
-    end
+  for i = 1, #Midi.inputListeners do
+    utils.callIfExists(Midi.inputListeners[i], { index, message, cable })
   end
 end

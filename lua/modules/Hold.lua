@@ -4,25 +4,27 @@ local Hold = Modules.create('Hold')
 function Hold:init()
   self.notes = {}
   self.lastNoteTime = 0
+  self.maxNoteInterval = 100
 end
 
-function Hold:input1_noteOn(message)
+---@param note MidiNoteOn
+function Hold:input1_noteOn(note)
   local time = Timer.now()
-  if time - self.lastNoteTime > 100 then
+  if time - self.lastNoteTime > self.maxNoteInterval then
     self:clear()
   end
-  self:addNote(message.data)
+  self:addNote(note)
   self.lastNoteTime = time
 end
 
 function Hold:addNote(note)
   table.insert(self.notes, note)
-  self:output(1, Midi.NoteOn(unpack(note)))
+  self:output(1, note)
 end
 
 function Hold:clear()
   for _, note in pairs(self.notes) do
-    self:output(1, Midi.NoteOff(unpack(note)))
+    self:output(1, note)
   end
   self.notes = {}
 end

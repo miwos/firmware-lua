@@ -27,15 +27,15 @@ function Arp:init()
   self.interval = 150
 end
 
----@param message MidiNoteOn
-function Arp:input1_noteOn(message)
+---@param note MidiNoteOn
+function Arp:input1_noteOn(note)
   -- Treat notes that are played close to each other in time as the input chord.
   local time = Timer.now()
   if time - self.lastNoteTime > 100 then
     self:clear()
   end
 
-  self:addNote({ message.data[1], message.data[2], message.channel })
+  self:addNote({ note.note, note.velocity, note.channel })
   self.lastNoteTime = time
 
   if not self.playing then

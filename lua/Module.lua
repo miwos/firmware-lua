@@ -41,7 +41,11 @@ function Module:output(index, message)
   if type == Midi.TypeNoteOn or type == Midi.TypeNoteOff then
     local key = index .. utils.getMidiNoteId(message)
     self._unfinishedNotes[key] = type == Midi.TypeNoteOn
-        and { index, unpack(message.data) }
+        and {
+          index,
+          message.note,
+          message.channel,
+        }
       or nil
   end
   Module.super.output(self, index, message)

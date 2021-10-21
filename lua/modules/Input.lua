@@ -13,8 +13,8 @@ function Input:init()
   Midi.addInputListener(self.inputListener)
 end
 
-function Input:handleInput(index, message)
-  if message.cable == self.props.cable then
+function Input:handleInput(index, message, cable)
+  if cable == nil or cable == self.props.cable then
     self:output(index, message)
   end
 end
