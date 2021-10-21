@@ -8,6 +8,7 @@ local PropBase = require('Props.PropBase')
 local PropNumber = class(PropBase)
 
 function PropNumber:constructor(args)
+  local args = args or {}
   self.min = args.min or 0
   self.max = args.max or 127
   self.step = args.step
@@ -32,8 +33,8 @@ function PropNumber:decodeValue(rawValue)
 end
 
 ---Convert a scaled prop value to a raw encoder value.
----@param value any
----@return any
+---@param value number
+---@return number
 function PropNumber:encodeValue(value)
   return utils.mapValue(value, self.min, self.max, Encoders.min, Encoders.max)
 end

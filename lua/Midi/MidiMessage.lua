@@ -25,4 +25,8 @@ function MidiMessage:deserialize(data1, data2, channel)
   self.channel = channel
 end
 
+function MidiMessage:is(MidiMessageClass)
+  return self.type == MidiMessageClass.type
+end
+
 return MidiMessage

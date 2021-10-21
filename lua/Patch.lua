@@ -49,6 +49,12 @@ function Patch:_makeConnections()
   end
 end
 
+function Patch:_clearConnections()
+  for _, module in pairs(self.modules) do
+    module:clearConnections()
+  end
+end
+
 function Patch:_initializeProps()
   if self.props then
     for moduleId, moduleProps in pairs(self.props) do
@@ -104,9 +110,7 @@ function Patch:update(data)
   self:_initModules()
 
   -- Clear and redo all connections (in case something changed).
-  for _, module in pairs(self.modules) do
-    module:clearConnections()
-  end
+  self:_clearConnections()
   self.connections = data.connections
   self:_makeConnections()
 
@@ -145,6 +149,7 @@ function Patch:updateModule(type, NewModule)
 
   -- If we changed a module we have to redo the connections.
   if updatedModule then
+    self:_clearConnections()
     self:_makeConnections()
   end
 end
