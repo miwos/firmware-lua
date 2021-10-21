@@ -2,7 +2,7 @@ local class = require('class')
 local utils = require('utils')
 
 ---@class Node
----@field _outputs table
+---@field _outputs table[]
 local Node = class()
 
 function Node:constructor()
@@ -14,7 +14,8 @@ end
 ---@param nodeId number The id of the node to connect to.
 ---@param nodeInput number The input index of the node to connect to.
 function Node:connect(output, nodeId, nodeInput)
-  self._outputs[output] = { nodeId, nodeInput }
+  self._outputs[output] = self._outputs[output] or {}
+  table.insert(self._outputs[output], { nodeId, nodeInput })
 end
 
 ---Clear all connections.
@@ -22,23 +23,28 @@ function Node:clearConnections()
   self._outputs = {}
 end
 
----Send data to output.
+---Send data to all inputs connected to the output.
 ---@param index number The output index.
 ---@param message MidiMessage The midi message to send.
 function Node:output(index, message)
-  local output = self._outputs[index]
-  if not output then
+  local outputs = self._outputs[index]
+  if not outputs then
     return
   end
 
-  local id, input = unpack(output)
-  local node = Modules.get(id)
-  if not node then
-    return
-  end
+  for _, input in pairs(outputs) do
+    local inputId, inputIndex = unpack(input)
+    local inputNode = Modules.get(inputId)
 
+    if inputNode then
+      self:_sendOutputToInput(message, inputNode, inputIndex)
+    end
+  end
+end
+
+function Node:_sendOutputToInput(message, node, index)
   -- Call a midi-type agnostic function like `input1()`.
-  local numberedInput = 'input' .. input
+  local numberedInput = 'input' .. index
   utils.callIfExists(node[numberedInput], { node, message })
 
   -- Call a midi-type aware function like `input1_noteOn()`.
@@ -49,7 +55,7 @@ function Node:output(index, message)
   )
 
   -- Call a generic `input()` function that handles any input.
-  utils.callIfExists(node.input, { node, input, message })
+  utils.callIfExists(node.input, { node, index, message })
 end
 
 return Node
