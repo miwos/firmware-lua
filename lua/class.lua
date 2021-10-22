@@ -4,6 +4,7 @@
 function class(base)
   local c = {}
   c.__index = c
+  c.Class = c
 
   --Create a new instance.
   ---@param _ table

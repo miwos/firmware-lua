@@ -25,6 +25,12 @@ function MidiMessage:deserialize(data1, data2, channel)
   self.channel = channel
 end
 
+function MidiMessage:copy()
+  local copy = self.Class()
+  copy:deserialize(unpack(self:serialize()))
+  return copy
+end
+
 function MidiMessage:is(MidiMessageClass)
   return self.type == MidiMessageClass.type
 end

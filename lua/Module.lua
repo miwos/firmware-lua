@@ -35,16 +35,18 @@ end
 
 ---Send data to output.
 ---@param index number The output index.
----@param message table The midi message to send.
+---@param message MidiMessage The midi message to send.
 function Module:output(index, message)
   local type = message.type
-  if type == Midi.NoteOn.type or type == Midi.NoteOff.type then
-    local key = index .. utils.getMidiNoteId(message)
+  if message:is(Midi.NoteOn) or message:is(Midi.NoteOff) then
+    ---@type MidiNoteOn|MidiNoteOff
+    local note = message
+    local key = index .. utils.getMidiNoteId(note)
     self._unfinishedNotes[key] = type == Midi.NoteOn.type
         and {
           index,
-          message.note,
-          message.channel,
+          note.note,
+          note.channel,
         }
       or nil
   end
@@ -60,8 +62,8 @@ end
 ---Finish unfinished midi notes to prevent midi panic.
 function Module:_finishNotes()
   for _, data in pairs(self._unfinishedNotes) do
-    local output = data[1]
-    Module.super.output(self, output, Midi.NoteOff(unpack(data, 2)))
+    local output, note, channel = unpack(data)
+    Module.super.output(self, output, Midi.NoteOff(note, 0, channel))
   end
 end
 

@@ -1,22 +1,57 @@
+local class = require('class')
+
 ---@class Delay : Module
 local Delay = Modules.create('Delay')
 
-Delay:defineProps({
-  time = Prop.Number({ default = 500, min = 0, max = 1000 }),
-})
+---@class DelayMessage
+---@field delay Delay
+---@field message MidiMessage
+local DelayMessage = class()
 
----@param note MidiNoteOn
-function Delay:input1_noteOn(note)
-  Timer.schedule(Timer.now() + self.props.time, function()
-    self:output(1, note)
+function DelayMessage:constructor(delay, message)
+  self.delay = delay
+  self.message = message
+  self.timerId = nil
+  self.gain = 1
+
+  self:send()
+end
+
+function DelayMessage:send()
+  self.timerId = Timer.schedule(Timer.now() + self.delay.props.time, function()
+    self.delay:output(1, self.message)
+
+    if self.message:is(Midi.NoteOn) then
+      self.message.velocity = math.floor(self.message.velocity * self.gain)
+    end
+
+    if self.gain > 0.1 then
+      self:send()
+    else
+      self:destroy()
+    end
+
+    self.gain = self.gain * self.delay.props.feedback
   end)
 end
 
----@param note MidiNoteOff
-function Delay:input1_noteOff(note)
-  Timer.schedule(Timer.now() + self.props.time, function()
-    self:output(1, note)
-  end)
+function DelayMessage:destroy()
+  Timer.cancel(self.timerId)
+end
+
+function Delay:init()
+  self:defineProps({
+    time = Prop.Number({ default = 500, min = 0, max = 1000, step = 1 }),
+    feedback = Prop.Number({ default = 0, min = 0, max = 1 }),
+  })
+
+  self.messages = {}
+end
+
+---@param message MidiMessage
+function Delay:input1(message)
+  DelayMessage(self, message)
+  self:output(1, message)
 end
 
 return Delay
