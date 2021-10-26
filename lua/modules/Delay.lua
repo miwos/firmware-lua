@@ -10,7 +10,9 @@ local DelayMessage = class()
 
 function DelayMessage:constructor(delay, message)
   self.delay = delay
-  self.message = message
+  -- We wan't to modify the note's velocity on each feedback loop, so we better
+  -- make a copy in order to not muatate the original note.
+  self.message = message:is(Midi.NoteOn) and message:copy() or message
   self.timerId = nil
   self.gain = 1
 
