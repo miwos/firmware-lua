@@ -24,7 +24,7 @@ end
 
 function Hold:clear()
   for _, note in pairs(self.notes) do
-    self:output(1, note)
+    self:output(1, Midi.NoteOff(note.note, 0, note.channel))
   end
   self.notes = {}
 end
