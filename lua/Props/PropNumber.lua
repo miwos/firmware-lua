@@ -9,11 +9,12 @@ local PropNumber = class(PropBase)
 
 function PropNumber:constructor(args)
   local args = args or {}
+  PropNumber.super.constructor(self, args)
+
   self.min = args.min or 0
   self.max = args.max or 127
   self.step = args.step
   self.value = args.default or self.min
-  self.onChange = args.onChange
 end
 
 ---Convert a raw encoder value to a scaled prop value.

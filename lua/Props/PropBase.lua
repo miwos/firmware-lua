@@ -2,13 +2,20 @@ local class = require('class')
 local utils = require('utils')
 
 ---@class Prop
+---@field super table
 ---@field module Module
 ---@field name string
 ---@field value any
 ---@field encodeValue function
 ---@field decodeValue function
 ---@field onChange function
+---@field onClick function
 local PropBase = class()
+
+function PropBase:constructor(args)
+  self.onChange = args.onChange
+  self.onClick = args.onClick
+end
 
 function PropBase:getValue()
   return self.value
@@ -32,6 +39,10 @@ end
 
 function PropBase:setRawValue(rawValue)
   self:setValue(self:decodeValue(rawValue), false)
+end
+
+function PropBase:click()
+  utils.callIfExists(self.onClick)
 end
 
 return PropBase

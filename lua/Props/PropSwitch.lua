@@ -9,9 +9,10 @@ local PropSwitch = class(PropBase)
 
 function PropSwitch:constructor(args)
   local args = args or {}
+  PropSwitch.super.constructor(self, args)
+
   self.states = args.states or 2
   self.value = args.default or 1
-  self.onChange = args.onChange
 end
 
 ---Convert a raw encoder value to a scaled prop value.
