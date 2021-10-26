@@ -6,21 +6,16 @@ Encoders.max = 127
 
 function Encoders.handleChange(index, rawValue)
   local patch = Patches.activePatch
-
-  if not patch then
-    return
+  local prop = patch and patch:getMappedProp(index)
+  if prop then
+    prop:setRawValue(rawValue)
   end
+end
 
-  if not patch.interface then
-    return
+function Encoders.handleClick(index)
+  local patch = Patches.activePatch
+  local prop = patch and patch:getMappedProp(index)
+  if prop then
+    prop:click()
   end
-
-  local encoders = patch.interface[1].encoders
-  local encoder = encoders[index]
-  if not encoder then
-    return
-  end
-
-  local moduleId, propName = unpack(encoder)
-  patch:changeProp(moduleId, propName, rawValue, true)
 end

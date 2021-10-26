@@ -1,7 +1,6 @@
 local class = require('class')
 
 ---@class Patch
----@field activePatch Patch
 ---@field name string Same as file name, will be set by `Patches.loadPatch()`.
 ---@field connections number[]
 ---@field types table<string, Module> Module can be an instance or a constructor.
@@ -45,6 +44,7 @@ end
 function Patch:_makeConnections()
   for _, connection in pairs(self.connections) do
     local fromId, output, toId, input = unpack(connection)
+    assert(self.modules[fromId], 'Module #' .. fromId .. " doesn't exist.")
     self.modules[fromId]:connect(output, toId, input)
   end
 end
@@ -59,7 +59,8 @@ function Patch:_initializeProps()
   if self.props then
     for moduleId, moduleProps in pairs(self.props) do
       for propName, value in pairs(moduleProps) do
-        self:changeProp(moduleId, propName, value)
+        local prop = self:getProp(moduleId, propName)
+        prop:setValue(value)
       end
     end
   end
@@ -74,22 +75,43 @@ function Patch:activate()
   end
 end
 
-function Patch:changeProp(moduleId, propName, value, valueIsRaw)
+function Patch:getProp(moduleId, propName)
   local module = self.modules[moduleId]
-  if not module then
+  return module and module.props._props[propName]
+end
+
+---@param encoderIndex number
+---@return Prop
+function Patch:getMappedProp(encoderIndex)
+  if not self.interface then
     return
   end
 
-  local prop = module.props._props[propName]
+  local encoders = self.interface[1].encoders
+  local moduleId, propName = unpack(encoders[encoderIndex])
+  return self:getProp(moduleId, propName)
+end
+
+-- function Patch:changeProp(moduleId, propName, value, valueIsRaw)
+--   local prop = self:getProp(moduleId, propName)
+--   if not prop then
+--     return
+--   end
+
+--   if valueIsRaw then
+--     prop:setRawValue(value)
+--   else
+--     prop:setValue(value)
+--   end
+-- end
+
+function Patch:clickProp(moduleId, propName)
+  local prop = self:getProp(moduleId, propName)
   if not prop then
     return
   end
 
-  if valueIsRaw then
-    prop:setRawValue(value)
-  else
-    prop:setValue(value)
-  end
+  prop:click()
 end
 
 function Patch:update(data)

@@ -10,6 +10,7 @@ Patches.activePatch = nil
 ---@return Patch
 function Patches.load(name)
   local data = loadfile('lua/patches/' .. name .. '.lua')
+  ---@type Patch
   local patch = Patch(data)
   patch.name = name
   patch:activate()
@@ -25,9 +26,8 @@ end
 
 function Patches.changeProp(moduleId, propName, value)
   local patch = Patches.activePatch
-  if not patch then
-    return
+  local prop = patch and patch:getProp(moduleId, propName)
+  if prop then
+    prop:setValue(value)
   end
-
-  patch:changeProp(moduleId, propName, value)
 end
