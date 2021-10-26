@@ -8,6 +8,7 @@ local utils = require('utils')
 ---@field value any
 ---@field encodeValue function
 ---@field decodeValue function
+---@field getDisplayValue function
 ---@field onChange function
 ---@field onClick function
 local PropBase = class()

@@ -2,11 +2,28 @@ Interface = {
   activePage = 1,
 }
 
----Write a property to the display.
----@param displayIndex any
----@param prop table
-function Interface:_displayProp(displayIndex, prop)
-  Displays.write(displayIndex, prop.name .. ': ' .. prop:getDisplayValue())
+local propChangedTimers = {}
+local propChangedTimeout = 1000 -- ms
+
+---Display the prop name (default behaviour).
+---@param index any
+---@param prop any
+function Interface:_displayPropName(index, prop)
+  Displays.write(index, prop.name)
+end
+
+---Display the prop value and switch back to displaying the prop name if the
+---value has not been changed for a certain time.
+function Interface:_displayPropValue(index, prop)
+  Displays.write(index, prop:getDisplayValue())
+
+  Timer.cancel(propChangedTimers[index])
+  propChangedTimers[index] = Timer.schedule(
+    Timer.now() + propChangedTimeout,
+    function()
+      Displays.write(index, prop.name)
+    end
+  )
 end
 
 ---Check if the prop is mentioned in the interface description of the patch, and
@@ -21,7 +38,7 @@ function Interface:propChange(prop, writeValue)
   local encoders = patch.interface[1].encoders
   for index, encoder in pairs(encoders) do
     if encoder[1] == prop.module._id and encoder[2] == prop.name then
-      self:_displayProp(index, prop)
+      self:_displayPropValue(index, prop)
       if writeValue then
         Encoders.write(index, prop:getRawValue())
       end
@@ -53,6 +70,6 @@ function Interface:patchChange(patch)
     end
 
     Encoders.write(index, prop:getRawValue())
-    self:_displayProp(index, prop)
+    Displays.write(index, prop.name)
   end
 end
