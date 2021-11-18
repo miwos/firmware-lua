@@ -59,13 +59,13 @@ function Interface:patchChange(patch)
     local module = patch.modules[moduleId]
 
     if not module then
-      Log.warning('Module #' .. moduleId .. " doesn't exist.")
+      Log.warn('Module #' .. moduleId .. " doesn't exist.")
       return
     end
 
     local prop = module.props._props[propName]
     if not prop then
-      Log.warning('Prop `' .. propName .. "` doesn't exist.")
+      Log.warn('Prop `' .. propName .. "` doesn't exist.")
       return
     end
 
