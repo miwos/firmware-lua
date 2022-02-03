@@ -2,40 +2,50 @@ local class = require('class')
 
 ---@class Patch
 ---@field name string Same as file name, will be set by `Patches.loadPatch()`.
+---@field instances table<string, Module>
 ---@field connections number[]
----@field types table<string, Module> Module can be an instance or a constructor.
----@field modules table<string, Module> Module is an instance.
+---@field mapping MappingPage[]
 local Patch = class()
 
 ---@class PatchData
----@field types table<string, Module>
+---@field instances table<string, PatchDataInstance>
 ---@field connections number[]
----@field props table<number, table<string, number>>
----@field interface table
+---@field mapping MappingPage[]
+
+---@class PatchDataInstance
+---@field Module Module
+---@field propValues table<string, number>
+
+---@class MappingPage
+---@field encoders table[]
 
 ---Initialize patch.
 ---@param data PatchData
 function Patch:constructor(data)
-  self.types = data.types
+  self.data = data
+  self.mapping = data.mapping
   self.connections = data.connections
-  self.interface = data.interface
-  self.props = data.props
-  ---@type table<string, Module>
-  self.modules = {}
-  self.hasInitializedProps = false
-
-  self:_initModules()
+  self.instances = {}
+  self:_createMissingInstances()
   self:_makeConnections()
 end
 
 ---Initialize modules.
-function Patch:_initModules()
-  for id, constructor in pairs(self.types) do
-    if not self.modules[id] then
-      local module = constructor()
-      module._id = id
-      module._patch = self
-      self.modules[id] = module
+function Patch:_createMissingInstances()
+  for id, definition in pairs(self.data.instances) do
+    if not self.instances[id] then
+      ---@type Module
+      local instance = definition.Module()
+      instance._id = id
+      instance._patch = self
+      self.instances[id] = instance
+
+      if definition.propValues then
+        for name, value in pairs(definition.propValues) do
+          local prop = instance.props._props[name]
+          prop:setValue(value)
+        end
+      end
     end
   end
 end
@@ -44,69 +54,48 @@ end
 function Patch:_makeConnections()
   for _, connection in pairs(self.connections) do
     local fromId, output, toId, input = unpack(connection)
-    assert(self.modules[fromId], 'Module #' .. fromId .. " doesn't exist.")
-    self.modules[fromId]:connect(output, toId, input)
+    assert(self.instances[fromId], 'Module #' .. fromId .. " doesn't exist.")
+    self.instances[fromId]:connect(output, toId, input)
   end
 end
 
 function Patch:_clearConnections()
-  for _, module in pairs(self.modules) do
-    module:clearConnections()
-  end
-end
-
-function Patch:_initializeProps()
-  if self.props then
-    for moduleId, moduleProps in pairs(self.props) do
-      for propName, value in pairs(moduleProps) do
-        local prop = self:getProp(moduleId, propName)
-        prop:setValue(value)
-      end
-    end
+  for _, instance in pairs(self.instances) do
+    instance:clearConnections()
   end
 end
 
 ---Activate the patch and initialize the encoders.
 function Patch:activate()
   Patches.activePatch = self
-  Interface:patchChange(self)
-  if not self.hasInitializedProps then
-    self:_initializeProps()
-  end
+  Interface.patchChange(self)
 end
 
-function Patch:getProp(moduleId, propName)
-  local module = self.modules[moduleId]
-  return module and module.props._props[propName]
+function Patch:getProp(instanceId, propName)
+  local instance = self.instances[instanceId]
+  return instance and instance.props._props[propName]
 end
 
 ---@param encoderIndex number
 ---@return Prop
 function Patch:getMappedProp(encoderIndex)
-  if not self.interface then
+  if not self.mapping then
     return
   end
 
-  local encoders = self.interface[1].encoders
-  local moduleId, propName = unpack(encoders[encoderIndex])
-  return self:getProp(moduleId, propName)
+  local encoders = self.mapping[1].encoders
+  local encoder = encoders[encoderIndex]
+  if not encoder then
+    Log.warn('Encoder #' .. encoderIndex .. " isn't mapped to anything.")
+    return
+  end
+
+  local instanceId, propName = unpack(encoder)
+  return self:getProp(instanceId, propName)
 end
 
--- function Patch:changeProp(moduleId, propName, value, valueIsRaw)
---   local prop = self:getProp(moduleId, propName)
---   if not prop then
---     return
---   end
-
---   if valueIsRaw then
---     prop:setRawValue(value)
---   else
---     prop:setValue(value)
---   end
--- end
-
-function Patch:clickProp(moduleId, propName)
-  local prop = self:getProp(moduleId, propName)
+function Patch:clickProp(instanceId, propName)
+  local prop = self:getProp(instanceId, propName)
   if not prop then
     return
   end
@@ -114,62 +103,62 @@ function Patch:clickProp(moduleId, propName)
   prop:click()
 end
 
+---@param data PatchData
 function Patch:update(data)
-  -- Remove old modules that are not part of the updated patch.
+  self.data = data
+  self.connections = data.connections
+  self.mapping = data.mapping
+
+  -- Remove old instances that are not part of the updated patch.
   local removeIds = {}
-  for id in pairs(self.modules) do
-    if not data.types[id] then
+  for id in pairs(self.instances) do
+    if not data.instances[id] then
       table.insert(removeIds, id)
     end
   end
   for _, id in pairs(removeIds) do
-    self.modules[id] = nil
+    self.instances[id] = nil
   end
 
-  -- Now we can update the types and initialize all modules that were not
-  -- already part of the old patch.
-  self.types = data.types
-  self:_initModules()
+  -- This will only create new instances that were not already part of patch.
+  self:_createMissingInstances()
 
-  -- Clear and redo all connections (in case something changed).
+  -- Clear and redo all connections in case something changed.
   self:_clearConnections()
-  self.connections = data.connections
   self:_makeConnections()
 
-  -- Finally, update the interface.
-  self.interface = data.interface
-  Interface:patchChange(self)
+  Interface.patchChange(self)
 end
 
 ---Update a single module instance.
 ---@param id any
----@param module Module
+---@param instance Module
 ---@param NewModule Module
-function Patch:_updateModuleInstance(id, module, NewModule)
-  local state = module:_saveState()
-  module:_destroy()
+function Patch:_updateInstance(id, instance, NewModule)
+  local state = instance:_saveState()
+  instance:_destroy()
 
-  local newModule = NewModule()
-  newModule:_applyState(state)
-  newModule._id = id
-  newModule._patch = self
+  local newInstance = NewModule()
+  newInstance:_applyState(state)
+  newInstance._id = id
+  newInstance._patch = self
 
-  self.modules[id] = newModule
+  self.instances[id] = newInstance
 end
 
----Update all module instances of the specified type.
+---Update all module instances of the specified Module.
 ---@param type string
 ---@param NewModule Module
 function Patch:updateModule(type, NewModule)
   local updatedModule = false
-  for id, module in pairs(self.modules) do
-    if module._type == type then
-      self:_updateModuleInstance(id, module, NewModule)
+  for id, instance in pairs(self.instances) do
+    if instance._type == type then
+      self:_updateInstance(id, instance, NewModule)
       updatedModule = true
     end
   end
 
-  -- If we changed a module we have to redo the connections.
+  -- If we changed an instance we have to redo the connections.
   if updatedModule then
     self:_clearConnections()
     self:_makeConnections()
@@ -177,7 +166,7 @@ function Patch:updateModule(type, NewModule)
 end
 
 function Patch:destroy()
-  for _, module in pairs(self.modules) do
+  for _, module in pairs(self.instances) do
     module:_destroy()
   end
 end

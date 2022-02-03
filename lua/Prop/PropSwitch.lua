@@ -1,5 +1,5 @@
 local utils = require('utils')
-local PropBase = require('Props.PropBase')
+local PropBase = require('Prop.PropBase')
 
 ---@class PropSwitch : Prop
 ---@field min number

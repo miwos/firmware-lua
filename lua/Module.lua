@@ -1,12 +1,12 @@
 local class = require('class')
 local Node = require('Node')
-local Props = require('Props.Props')
+local Props = require('Props')
 local utils = require('utils')
 
 ---@class Module : Node
 -- Will both be set in `Patch#_initModules()`
 ---@field _patch Patch
----@field _id Patch
+---@field _id number
 -- Will be set in `Miwos#createModule()`
 ---@field _type string
 ---@field destroy function

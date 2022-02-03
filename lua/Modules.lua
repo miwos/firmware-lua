@@ -13,5 +13,5 @@ function Modules.create(name)
 end
 
 function Modules.get(id)
-  return Patches.activePatch and Patches.activePatch.modules[id] or nil
+  return Patches.activePatch and Patches.activePatch.instances[id] or nil
 end

@@ -8,8 +8,6 @@ function Chorder:init()
   })
 
   self.notes = {}
-  self.inputs = 1
-  self.outputs = 1
 end
 
 ---@param note MidiNoteOn

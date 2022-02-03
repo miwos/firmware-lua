@@ -1,3 +1,6 @@
+---@class Class
+---@field Class table
+
 ---A very basic class helper with multiple inheritance.
 ---@param base table
 ---@return table
@@ -8,7 +11,7 @@ function class(base)
 
   --Create a new instance.
   ---@param _ table
-  ---@return table
+  ---@return Class
   local function call(_, ...)
     local instance = setmetatable({}, c)
     if c.constructor then

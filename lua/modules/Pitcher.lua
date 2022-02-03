@@ -5,21 +5,21 @@ local Pitcher = Modules.create('Pitcher')
 
 function Pitcher:init()
   self:defineProps({
-    semitones = Prop.Number({ default = 0, min = -24, max = 24, step = 1 }),
+    pitch = Prop.Number({ default = 0, min = -24, max = 24, step = 1 }),
   })
 
   self.usedPitches = {}
 end
 
 function Pitcher:sendNote(note)
-  local pitchedNote = note.note + self.props.semitones
+  local pitchedNote = note.note + self.props.pitch
   note.note = pitchedNote
   self:output(1, note)
 end
 
 ---@param note MidiNoteOn
 function Pitcher:input1_noteOn(note)
-  local pitchedNote = note.note + self.props.semitones
+  local pitchedNote = note.note + self.props.pitch
   self.usedPitches[utils.getMidiNoteId(note)] = pitchedNote
 
   self:output(1, Midi.NoteOn(pitchedNote, note.velocity, note.channel))

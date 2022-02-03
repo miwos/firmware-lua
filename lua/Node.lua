@@ -3,6 +3,7 @@ local utils = require('utils')
 
 ---@class Node
 ---@field _outputs table[]
+---@field _id number
 local Node = class()
 
 function Node:constructor()
@@ -27,6 +28,8 @@ end
 ---@param index number The output index.
 ---@param message MidiMessage The midi message to send.
 function Node:output(index, message)
+  Bridge.sendOutput(self._id, index, message)
+
   local outputs = self._outputs[index]
   if not outputs then
     return
@@ -42,7 +45,12 @@ function Node:output(index, message)
   end
 end
 
+---@param message MidiMessage
+---@param node Node
+---@param index number
 function Node:_sendOutputToInput(message, node, index)
+  Bridge.sendInput(node._id, index, message)
+
   -- Call a midi-type agnostic function like `input1()`.
   local numberedInput = 'input' .. index
   utils.callIfExists(node[numberedInput], { node, message })
@@ -55,7 +63,7 @@ function Node:_sendOutputToInput(message, node, index)
   )
 
   -- Call a generic `input()` function that handles any input.
-  utils.callIfExists(node.input, { node, index, message })
+  utils.callIfExists(node['input'], { node, index, message })
 end
 
 return Node

@@ -1,26 +1,21 @@
 local Input = require('modules.Input')
 local Output = require('modules.Output')
-local Switch = require('modules.Switch')
+local Pitcher = require('modules.Pitcher')
 
 return {
-  types = {
-    [1] = Input,
-    [2] = Output,
-    [3] = Output,
-    [4] = Switch,
+  instances = {
+    [1] = { Module = Input },
+    [2] = { Module = Output },
+    [3] = { Module = Pitcher },
   },
   connections = {
-    { 1, 1, 4, 1 },
-    { 4, 1, 2, 1 },
-    { 4, 2, 3, 1 },
+    { 1, 1, 3, 1 },
+    { 3, 1, 2, 1 },
   },
-  props = {
-    [3] = { cable = 2 },
-  },
-  interface = {
+  mapping = {
     {
       encoders = {
-        { 4, 'state' },
+        { 3, 'pitch' },
       },
     },
   },

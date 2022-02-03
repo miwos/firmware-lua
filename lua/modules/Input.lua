@@ -3,7 +3,7 @@ local Input = Modules.create('Input')
 
 function Input:init()
   self:defineProps({
-    cable = Prop.Number({ min = 1, max = 16, default = 1, step = 1 }),
+    cable = Prop.Number({ min = 1, max = 16, step = 1 }),
   })
 
   self.inputListener = function(...)

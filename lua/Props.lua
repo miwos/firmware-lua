@@ -14,9 +14,9 @@ function mt:__index(key)
   return prop and prop:getValue() or nil
 end
 
-local function Props(module, props)
+local function Props(instance, props)
   for name, prop in pairs(props) do
-    prop.module = module
+    prop.instance = instance
     prop.name = name
   end
   local t = { _props = props }

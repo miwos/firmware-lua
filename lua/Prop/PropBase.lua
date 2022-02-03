@@ -3,7 +3,7 @@ local utils = require('utils')
 
 ---@class Prop
 ---@field super table
----@field module Module
+---@field instance Module
 ---@field name string
 ---@field value any
 ---@field encodeValue function
@@ -22,16 +22,16 @@ function PropBase:getValue()
   return self.value
 end
 
-function PropBase:setValue(value, writeValue)
+function PropBase:setValue(value, shouldWriteValue)
   -- By default we write the value to the encoder as soon as the
   -- prop changes. in `Prop#setRawvalue()` we deactivate this behaviour, because
   -- the raw value comes from the encoder, so no need to write it again.
-  writeValue = writeValue == nil and true or writeValue
+  shouldWriteValue = shouldWriteValue == nil and true or shouldWriteValue
 
   self.value = value
   utils.callIfExists(self.onChange, { value })
-  Interface:propChange(self, writeValue)
-  Bridge.sendPropChange(self.module._id, self.name, self.value)
+  Interface.propChange(self, shouldWriteValue)
+  Bridge.sendProp(self.instance._id, self.name, self.value)
 end
 
 function PropBase:getRawValue()

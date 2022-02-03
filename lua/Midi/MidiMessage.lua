@@ -1,6 +1,6 @@
 local class = require('class')
 
----@class MidiMessage
+---@class MidiMessage: Class
 ---@field type number The midi type.
 ---@field name string A human readable midi type name (e.g.: 'noteOn').
 ---@field keys table Name aliases for midi data1 and data2 (e.g.: for a noteOn
