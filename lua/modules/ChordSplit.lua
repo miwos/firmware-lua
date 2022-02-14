@@ -27,9 +27,9 @@ function ChordSplit:input1_noteOn(note)
   self.lastNoteTime = time
 
   if self.timerId == nil then
-    local _self = self
     self.timerId = Timer.schedule(Timer.now() + self.maxNoteInterval, function()
-      _self:split()
+      self:split()
+      self.timerId = nil
     end)
   else
     Timer.reschedule(Timer.now() + self.maxNoteInterval)
@@ -44,7 +44,7 @@ end
 ---@param outputIndex number
 ---@param note MidiNoteOn
 function ChordSplit:playNote(outputIndex, note)
-  self.usedOutputs[utils.getMidiNoteId(note)] = outputIndex
+  self.usedOutputs[Midi.getNoteId(note)] = outputIndex
   self:output(outputIndex, note)
 end
 
@@ -58,12 +58,14 @@ end
 
 ---@param note MidiNoteOff
 function ChordSplit:input1_noteOff(note)
-  local noteId = utils.getMidiNoteId(note)
+  local noteId = Midi.getNoteId(note)
 
   local outputIndex = self.usedOutputs[noteId]
   self.usedOutputs[noteId] = nil
 
-  self:output(outputIndex, note)
+  if outputIndex then
+    self:output(outputIndex, note)
+  end
 end
 
 return ChordSplit

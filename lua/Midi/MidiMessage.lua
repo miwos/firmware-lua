@@ -3,6 +3,8 @@ local class = require('class')
 ---@class MidiMessage: Class
 ---@field type number The midi type.
 ---@field name string A human readable midi type name (e.g.: 'noteOn').
+---@field owner number The id of the instance that created the message.
+---@field channel number
 ---@field keys table Name aliases for midi data1 and data2 (e.g.: for a noteOn
 ---message this would be `{ 'note', 'velocity' }`).
 local MidiMessage = class()

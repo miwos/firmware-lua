@@ -12,6 +12,3 @@ require('Modules') -- ram ~12
 require('Miwos') -- ram <1
 
 Patches.load('patch1')
-
-local id = Midi.getNoteId(60, 1)
-Log.info(Midi.parseNoteId(id))

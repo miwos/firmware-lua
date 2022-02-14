@@ -3,14 +3,6 @@ local utils = require('utils')
 ---@class ModulePitcher : Module
 local Pitcher = Modules.create('Pitcher')
 
--- Pitcher.on('input1:*', function(self, message)
-
--- end)
-
--- Pitcher.input(1).on('note', '')
-
--- Pitcher.on('note-on', 'handleNoteOn')
-
 function Pitcher:init()
   self:defineProps({
     pitch = Prop.Number({ default = 0, min = -24, max = 24, step = 1 }),
@@ -28,23 +20,25 @@ end
 ---@param message MidiNoteOn
 function Pitcher:input1_noteOn(message)
   local pitchedNote = message.note + self.props.pitch
-  self.usedPitches[utils.getMidiNoteId(message)] = pitchedNote
+  self.usedPitches[Midi.getNoteId(message)] = pitchedNote
   self:output(1, Midi.NoteOn(pitchedNote, message.velocity, message.channel))
 end
 
 ---@param message MidiNoteOff
 function Pitcher:input1_noteOff(message)
-  local noteId = utils.getMidiNoteId(message)
-
-  -- Sometimes `pitchedNote` is already deleted. Not sure why this happens
-  -- exactly.
+  local noteId = Midi.getNoteId(message)
   local pitchedNote = self.usedPitches[noteId]
-  if pitchedNote == nil then
-    return
-  end
 
-  self.usedPitches[noteId] = nil
-  self:output(1, Midi.NoteOff(pitchedNote, message.velocity, message.channel))
+  -- Sometimes `pitchedNote` is already deleted. Not sure why this happens.
+  if pitchedNote then
+    self.usedPitches[noteId] = nil
+    self:output(1, Midi.NoteOff(pitchedNote, message.velocity, message.channel))
+  else
+    Log.warn("Can't find pitch.")
+  end
 end
+
+Pitcher:on('input1:noteOn', Pitcher.input1_noteOn)
+Pitcher:on('input1:noteOff', Pitcher.input1_noteOff)
 
 return Pitcher

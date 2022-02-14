@@ -1,28 +1,25 @@
 local class = require('class')
-local Node = require('Node')
 local Props = require('Props')
 local utils = require('utils')
 
----@class Module : Node
--- Will both be set in `Patch#_initModules()`
----@field _patch Patch
----@field _id number
--- Will be set in `Miwos#createModule()`
----@field _type string
+---@class Module : Class
+---@field init function
 ---@field destroy function
----@field defineProps function
----@field props table
----@field _saveState function
----@field _destroy function
+---@field __id number
+---@field __type string Will be set in `Miwos#createModule()`
+---@field __events string Will be set in `Miwos#createModule()`
+local Module = class()
 
-local Module = class(Node)
-
----See `Module#_applyState` and `Module#_saveState`.
 Module.__hmrKeep = { 'props' }
+-- Module.__events = {}
+
+function Module:on(event, callback)
+  self.__events[event] = callback
+end
 
 function Module:constructor()
-  Module.super.constructor(self)
   self.props = {}
+  self._outputs = {}
   self._unfinishedNotes = {}
   utils.callIfExists(self.init, { self })
 end
@@ -33,37 +30,76 @@ function Module:defineProps(props)
   self.props = Props(self, props)
 end
 
----Send data to output.
+---Connect an output to the input of another Module.
+---@param output number The output index.
+---@param moduleId number The id of the module to connect to.
+---@param moduleInput number The input index of the module to connect to.
+function Module:__connect(output, moduleId, moduleInput)
+  self._outputs[output] = self._outputs[output] or {}
+  table.insert(self._outputs[output], { moduleId, moduleInput })
+end
+
+---Send data to all inputs connected to the output.
 ---@param index number The output index.
 ---@param message MidiMessage The midi message to send.
 function Module:output(index, message)
-  local type = message.type
-  if message:is(Midi.NoteOn) or message:is(Midi.NoteOff) then
+  Bridge.sendOutput(self.__id, index, message)
+
+  local isNoteOn = message:is(Midi.NoteOn)
+  local isNoteOff = message:is(Midi.NoteOff)
+  if isNoteOn or isNoteOff then
     ---@type MidiNoteOn|MidiNoteOff
     local note = message
-    local key = index .. utils.getMidiNoteId(note)
-    self._unfinishedNotes[key] = type == Midi.NoteOn.type
-        and {
-          index,
-          note.note,
-          note.channel,
-        }
-      or nil
+    local noteId = Midi.getNoteId(note.note, note.channel)
+    self._unfinishedNotes[index] = self._unfinishedNotes[index] or {}
+    self._unfinishedNotes[index][noteId] = note:is(Midi.NoteOn) and true or nil
   end
-  Module.super.output(self, index, message)
+
+  self:__handleOutput(index, message)
 end
 
----Return a human readable name for debugging (e.g.: delay1)
----@return string
-function Module:_name()
-  return self._type .. self._id
+function Module:__handleOutput(index, message)
+  if self._outputs[index] then
+    for _, input in pairs(self._outputs[index]) do
+      local inputId, inputIndex = unpack(input)
+      local inputNode = Modules.get(inputId)
+
+      if inputNode then
+        self:__sendOutputToInput(message, inputNode, inputIndex)
+      end
+    end
+  end
+end
+
+---@param message MidiMessage
+---@param module Module
+---@param index number
+function Module:__sendOutputToInput(message, module, index)
+  Bridge.sendInput(module.__id, index, message)
+
+  local payload = { module, message }
+  local numberedInput = 'input' .. index
+
+  utils.callIfExists(module.__events['input:*'], payload)
+  utils.callIfExists(module.__events['input:' .. message.name], payload)
+
+  utils.callIfExists(module.__events[numberedInput .. ':*'], payload)
+  utils.callIfExists(
+    module.__events[numberedInput .. ':' .. message.name],
+    payload
+  )
 end
 
 ---Finish unfinished midi notes to prevent midi panic.
-function Module:_finishNotes()
-  for _, data in pairs(self._unfinishedNotes) do
-    local output, note, channel = unpack(data)
-    Module.super.output(self, output, Midi.NoteOff(note, 0, channel))
+---@param output? number
+function Module:__finishNotes(output)
+  for index, noteIds in pairs(self._unfinishedNotes) do
+    if not output or index == output then
+      for noteId in pairs(noteIds) do
+        local note, channel = Midi.parseNoteId(noteId)
+        self:__handleOutput(index, Midi.NoteOff(note, 0, channel))
+      end
+    end
   end
 end
 
@@ -71,7 +107,7 @@ end
 ---saved. Note: unlike `__hmrAccept()` and `__hmrDispose()` this function is
 ---called for each instance (see `Patch#updateModule()`).
 ---@return table - the state
-function Module:_saveState()
+function Module:__saveState()
   local state = {}
   for _, property in pairs(self.__hmrKeep) do
     state[property] = self[property]
@@ -79,9 +115,9 @@ function Module:_saveState()
   return state
 end
 
----Apply the module instance's state. See `Module#_saveState()`.
+---Apply the module instance's state. See `Module#__saveState()`.
 ---@param state table
-function Module:_applyState(state)
+function Module:__applyState(state)
   for _, property in pairs(self.__hmrKeep) do
     if state[property] ~= nil then
       self[property] = state[property]
@@ -93,7 +129,7 @@ end
 ---@param OldModule Module
 ---@return table
 function Module.__hmrDispose(OldModule)
-  return { type = OldModule._type }
+  return { type = OldModule.__type }
 end
 
 ---Update all module instances after a HMR.
@@ -109,12 +145,17 @@ end
 ---module.
 ---@return boolean - Wether or not to decline the HMR.
 function Module.__hmrDecline(_, module)
-  -- Only actual modules that inherit from Module have a `_type`.
-  return not module._type
+  -- Only actual modules that inherit from Module have a `__type`.
+  return not module.__type
 end
 
-function Module:_destroy()
-  self:_finishNotes()
+---Clear all connections.
+function Module:__clearConnections()
+  self._outputs = {}
+end
+
+function Module:__destroy()
+  self:__finishNotes()
   utils.callIfExists(self.destroy, { self })
 end
 

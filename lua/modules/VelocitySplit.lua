@@ -14,13 +14,13 @@ function VelocitySplit:input1(message)
   local outputIndex = 1
 
   if message:is(Midi.NoteOn) then
-    local noteId = utils.getMidiNoteId(message)
+    local noteId = Midi.getNoteId(message)
     ---@type MidiNoteOn
     local note = message
     outputIndex = (note.velocity < self.props.thresh) and 1 or 2
     self.usedOutputs[noteId] = outputIndex
   elseif message:is(Midi.NoteOff) then
-    local noteId = utils.getMidiNoteId(message)
+    local noteId = Midi.getNoteId(message)
     outputIndex = self.usedOutputs[noteId]
     self.usedOutputs[noteId] = nil
   end

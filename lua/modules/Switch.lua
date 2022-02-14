@@ -16,10 +16,10 @@ function Switch:input1(message)
   local outputIndex = self.props.state
 
   if message:is(Midi.NoteOn) then
-    local noteId = utils.getMidiNoteId(message)
+    local noteId = Midi.getNoteId(message)
     self.usedOutputs[noteId] = outputIndex
   elseif message:is(Midi.NoteOff) then
-    local noteId = utils.getMidiNoteId(message)
+    local noteId = Midi.getNoteId(message)
     outputIndex = self.usedOutputs[noteId]
     self.usedOutputs[noteId] = nil
   end

@@ -1,5 +1,6 @@
 ---@class Class
 ---@field Class table
+---@field super table
 
 ---A very basic class helper with multiple inheritance.
 ---@param base table

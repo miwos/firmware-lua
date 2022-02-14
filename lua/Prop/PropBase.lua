@@ -28,10 +28,10 @@ function PropBase:setValue(value, shouldWriteValue)
   -- the raw value comes from the encoder, so no need to write it again.
   shouldWriteValue = shouldWriteValue == nil and true or shouldWriteValue
 
-  self.value = value
   utils.callIfExists(self.onChange, { value })
-  Interface.propChange(self, shouldWriteValue)
-  Bridge.sendProp(self.instance._id, self.name, self.value)
+  self.value = value
+  Interface.handlePropChange(self, shouldWriteValue)
+  Bridge.sendProp(self.instance.__id, self.name, self.value)
 end
 
 function PropBase:getRawValue()

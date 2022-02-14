@@ -33,7 +33,7 @@ end
 
 function Interface.selectPage(index, shouldUpdateBridge)
   Interface.currentPageIndex = index
-  Interface.patchChange(Patches.activePatch)
+  Interface.handlePatchChange(Patches.activePatch)
 
   for i = 1, 3 do
     -- Mapping page leds are 4, 5, 6 (an offset of 3).
@@ -58,7 +58,7 @@ end
 ---Check if the prop is mentioned in the interface description of the patch, and
 ---if so, write the prop in the corresponding display.
 ---@param prop Prop The prop that has changed.
-function Interface.propChange(prop, shouldWriteValue)
+function Interface.handlePropChange(prop, shouldWriteValue)
   local patch = Patches.activePatch
   if not (patch and patch.mapping) then
     return
@@ -66,7 +66,7 @@ function Interface.propChange(prop, shouldWriteValue)
 
   local encoders = patch.mapping[Interface.currentPageIndex].encoders
   for index, encoder in pairs(encoders) do
-    if encoder[1] == prop.instance._id and encoder[2] == prop.name then
+    if encoder[1] == prop.instance.__id and encoder[2] == prop.name then
       Interface._displayPropValue(index, prop)
       if shouldWriteValue then
         Encoders.write(index, prop:getRawValue())
@@ -77,7 +77,7 @@ function Interface.propChange(prop, shouldWriteValue)
 end
 
 ---@param patch Patch
-function Interface.patchChange(patch)
+function Interface.handlePatchChange(patch)
   if not patch.mapping then
     return
   end

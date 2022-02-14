@@ -41,3 +41,13 @@ function Midi.handleInput(index, messageType, data1, data2, channel, cable)
     utils.callIfExists(Midi.inputListeners[i], { index, message, cable })
   end
 end
+
+---@param messageOrNote MidiNoteOn|MidiNoteOff|number
+---@param channel? number
+function Midi.getNoteId(messageOrNote, channel)
+  if channel ~= nil then
+    return Midi._getNoteId(messageOrNote, channel)
+  else
+    return Midi._getNoteId(messageOrNote.note, messageOrNote.channel)
+  end
+end

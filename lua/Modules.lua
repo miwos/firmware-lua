@@ -8,7 +8,8 @@ Modules = _G.Modules or {}
 ---@return table
 function Modules.create(name)
   local newModule = class(Module)
-  newModule._type = name
+  newModule.__type = name
+  newModule.__events = {}
   return newModule
 end
 

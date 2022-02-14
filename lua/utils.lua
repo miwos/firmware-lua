@@ -27,6 +27,10 @@ function utils.getMidiNoteId(message)
   return message.note .. '-' .. message.channel
 end
 
+function utils.parseEventName(name)
+  local separator = name:find(':')
+  return name:sub(1, separator - 1), name:sub(separator + 1)
+end
 function utils.getUsedMemory()
   collectgarbage('collect')
   return collectgarbage('count')

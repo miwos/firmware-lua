@@ -36,8 +36,7 @@ function Patch:_createMissingInstances()
     if not self.instances[id] then
       ---@type Module
       local instance = definition.Module()
-      instance._id = id
-      instance._patch = self
+      instance.__id = id
       self.instances[id] = instance
 
       if definition.props then
@@ -55,20 +54,20 @@ function Patch:_makeConnections()
   for _, connection in pairs(self.connections) do
     local fromId, output, toId, input = unpack(connection)
     assert(self.instances[fromId], 'Module #' .. fromId .. " doesn't exist.")
-    self.instances[fromId]:connect(output, toId, input)
+    self.instances[fromId]:__connect(output, toId, input)
   end
 end
 
 function Patch:_clearConnections()
   for _, instance in pairs(self.instances) do
-    instance:clearConnections()
+    instance:__clearConnections()
   end
 end
 
 ---Activate the patch and initialize the encoders.
 function Patch:activate()
   Patches.activePatch = self
-  Interface.patchChange(self)
+  Interface.handlePatchChange(self)
 end
 
 function Patch:getProp(instanceId, propName)
@@ -127,7 +126,7 @@ function Patch:update(data)
   self:_clearConnections()
   self:_makeConnections()
 
-  Interface.patchChange(self)
+  Interface.handlePatchChange(self)
 end
 
 ---Update a single module instance.
@@ -135,13 +134,12 @@ end
 ---@param instance Module
 ---@param NewModule Module
 function Patch:_updateInstance(id, instance, NewModule)
-  local state = instance:_saveState()
-  instance:_destroy()
+  local state = instance:__saveState()
+  instance:__destroy()
 
   local newInstance = NewModule()
-  newInstance:_applyState(state)
-  newInstance._id = id
-  newInstance._patch = self
+  newInstance:__applyState(state)
+  newInstance.__id = id
 
   self.instances[id] = newInstance
 end
@@ -152,7 +150,7 @@ end
 function Patch:updateModule(type, NewModule)
   local updatedModule = false
   for id, instance in pairs(self.instances) do
-    if instance._type == type then
+    if instance.__type == type then
       self:_updateInstance(id, instance, NewModule)
       updatedModule = true
     end
@@ -167,7 +165,7 @@ end
 
 function Patch:destroy()
   for _, module in pairs(self.instances) do
-    module:_destroy()
+    module:__destroy()
   end
 end
 
