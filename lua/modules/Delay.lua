@@ -10,9 +10,8 @@ local DelayMessage = class()
 
 function DelayMessage:constructor(delay, message)
   self.delay = delay
-  -- We wan't to modify the note's velocity on each feedback loop, so we better
-  -- make a copy in order to not muatate the original note.
-  self.message = message:is(Midi.NoteOn) and message:copy() or message
+  self.message = message
+  self.initialVelocity = message.velocity
   self.timerId = nil
   self.gain = 1
 
@@ -21,19 +20,20 @@ end
 
 function DelayMessage:send()
   self.timerId = Timer.schedule(Timer.now() + self.delay.props.time, function()
+    local isNoteOn = self.message:is(Midi.NoteOn)
     self.delay:output(1, self.message)
 
-    if self.message:is(Midi.NoteOn) then
-      self.message.velocity = math.floor(self.message.velocity * self.gain)
+    if isNoteOn then
+      self.message.velocity = math.floor(self.initialVelocity * self.gain)
     end
-
-    if self.gain > 0.1 then
-      self:send()
-    else
-      self:destroy()
-    end
-
     self.gain = self.gain * self.delay.props.feedback
+
+    local thresh = self.delay.props.feedback * 0.01
+    if self.delay.props.feedback == 0 or self.gain < thresh then
+      self:destroy()
+    else
+      self:send()
+    end
   end)
 end
 

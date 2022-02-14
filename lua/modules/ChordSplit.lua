@@ -26,11 +26,14 @@ function ChordSplit:input1_noteOn(note)
   self:addNote(note)
   self.lastNoteTime = time
 
-  Timer.cancel(self.timerId)
-  local _self = self
-  self.timerId = Timer.schedule(Timer.now() + self.maxNoteInterval, function()
-    _self:split()
-  end)
+  if self.timerId == nil then
+    local _self = self
+    self.timerId = Timer.schedule(Timer.now() + self.maxNoteInterval, function()
+      _self:split()
+    end)
+  else
+    Timer.reschedule(Timer.now() + self.maxNoteInterval)
+  end
 end
 
 ---@param note MidiNoteOn

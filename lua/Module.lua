@@ -18,7 +18,7 @@ local utils = require('utils')
 local Module = class(Node)
 
 ---See `Module#_applyState` and `Module#_saveState`.
-Module.__hmrKeep = {}
+Module.__hmrKeep = { 'props' }
 
 function Module:constructor()
   Module.super.constructor(self)

@@ -14,7 +14,7 @@ local Patch = class()
 
 ---@class PatchDataInstance
 ---@field Module Module
----@field propValues table<string, number>
+---@field props table<string, number>
 
 ---@class MappingPage
 ---@field encoders table[]
@@ -40,8 +40,8 @@ function Patch:_createMissingInstances()
       instance._patch = self
       self.instances[id] = instance
 
-      if definition.propValues then
-        for name, value in pairs(definition.propValues) do
+      if definition.props then
+        for name, value in pairs(definition.props) do
           local prop = instance.props._props[name]
           prop:setValue(value)
         end
@@ -83,7 +83,7 @@ function Patch:getMappedProp(encoderIndex)
     return
   end
 
-  local encoders = self.mapping[1].encoders
+  local encoders = self.mapping[Interface.currentPageIndex].encoders
   local encoder = encoders[encoderIndex]
   if not encoder then
     Log.warn('Encoder #' .. encoderIndex .. " isn't mapped to anything.")

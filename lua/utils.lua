@@ -22,9 +22,9 @@ function utils.isInt(value)
 end
 
 ---Get an id for the specific note in format 'note-velocity-channel'
----@param note MidiNoteOn|MidiNoteOff
-function utils.getMidiNoteId(note)
-  return note.note .. '-' .. note.channel
+---@param message MidiNoteOn|MidiNoteOff
+function utils.getMidiNoteId(message)
+  return message.note .. '-' .. message.channel
 end
 
 function utils.getUsedMemory()

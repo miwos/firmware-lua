@@ -1,11 +1,17 @@
-require('Bridge')
-require('Timer')
-require('Encoders')
-require('Midi.Midi')
-require('Prop.Prop')
-require('Interface')
-require('Patches')
-require('Modules')
-require('Miwos')
+-- ram loa ~14
+require('Bridge') -- ram <1
+require('Timer') -- ram ~3
+require('Encoders') --ram ~1
+require('Buttons') -- ram <1
+require('LEDs')
+require('Midi.Midi') -- ram ~8
+require('Prop.Prop') -- ram ~8
+require('Interface') -- ram ~4
+require('Patches') -- ram ~9
+require('Modules') -- ram ~12
+require('Miwos') -- ram <1
 
 Patches.load('patch1')
+
+local id = Midi.getNoteId(60, 1)
+Log.info(Midi.parseNoteId(id))
