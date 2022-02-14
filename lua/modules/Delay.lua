@@ -51,9 +51,9 @@ function Delay:init()
 end
 
 ---@param message MidiMessage
-function Delay:input1(message)
+Delay:on('input1:*', function(self, message)
   DelayMessage(self, message)
   self:output(1, message)
-end
+end)
 
 return Delay

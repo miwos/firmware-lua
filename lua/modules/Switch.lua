@@ -12,7 +12,7 @@ function Switch:init()
 end
 
 ---@param message MidiMessage
-function Switch:input1(message)
+Switch:on('input1:*', function(self, message)
   local outputIndex = self.props.state
 
   if message:is(Midi.NoteOn) then
@@ -25,6 +25,6 @@ function Switch:input1(message)
   end
 
   self:output(outputIndex, message)
-end
+end)
 
 return Switch

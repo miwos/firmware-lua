@@ -8,14 +8,14 @@ function Hold:init()
 end
 
 ---@param note MidiNoteOn
-function Hold:input1_noteOn(note)
+Hold:on('input1:noteOn', function(self, note)
   local time = Timer.now()
   if time - self.lastNoteTime > self.maxNoteInterval then
     self:clear()
   end
   self:addNote(note)
   self.lastNoteTime = time
-end
+end)
 
 function Hold:addNote(note)
   table.insert(self.notes, note)

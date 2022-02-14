@@ -29,11 +29,6 @@ Output:on('input1:*', function(self, message)
   self:output(1, message)
 end)
 
--- ---@param message MidiMessage
--- function Output:input1(message)
---   self:output(1, message)
--- end
-
 ---Override `Module.__handleOutput()` to send the message directly via midi.
 ---@param message MidiMessage
 function Output:__handleOutput(_, message)

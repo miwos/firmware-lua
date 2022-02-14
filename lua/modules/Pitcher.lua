@@ -18,14 +18,14 @@ function Pitcher:sendNote(note)
 end
 
 ---@param message MidiNoteOn
-function Pitcher:input1_noteOn(message)
+Pitcher:on('input1:noteOn', function(self, message)
   local pitchedNote = message.note + self.props.pitch
   self.usedPitches[Midi.getNoteId(message)] = pitchedNote
   self:output(1, Midi.NoteOn(pitchedNote, message.velocity, message.channel))
-end
+end)
 
 ---@param message MidiNoteOff
-function Pitcher:input1_noteOff(message)
+Pitcher:on('input1:noteOff', function(self, message)
   local noteId = Midi.getNoteId(message)
   local pitchedNote = self.usedPitches[noteId]
 
@@ -36,9 +36,6 @@ function Pitcher:input1_noteOff(message)
   else
     Log.warn("Can't find pitch.")
   end
-end
-
-Pitcher:on('input1:noteOn', Pitcher.input1_noteOn)
-Pitcher:on('input1:noteOff', Pitcher.input1_noteOff)
+end)
 
 return Pitcher

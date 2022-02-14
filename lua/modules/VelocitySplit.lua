@@ -10,7 +10,7 @@ function VelocitySplit:init()
 end
 
 ---@param message MidiMessage
-function VelocitySplit:input1(message)
+VelocitySplit:on('input1:*', function(self, message)
   local outputIndex = 1
 
   if message:is(Midi.NoteOn) then
@@ -26,6 +26,6 @@ function VelocitySplit:input1(message)
   end
 
   self:output(outputIndex, message)
-end
+end)
 
 return VelocitySplit

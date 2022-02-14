@@ -11,17 +11,17 @@ function Chorder:init()
 end
 
 ---@param note MidiNoteOn
-function Chorder:input1_noteOn(note)
+Chorder:on('input1:noteOn', function(self, note)
   self:output(1, note)
   self:sendChordNote(note.note + self.props.pitch1, note.velocity, note.channel)
   self:sendChordNote(note.note + self.props.pitch2, note.velocity, note.channel)
-end
+end)
 
 ---@param note MidiNoteOn
-function Chorder:input1_noteOff(note)
+Chorder:on('input1:noteOff', function(self, note)
   self:output(1, note)
   self:clear()
-end
+end)
 
 function Chorder:sendChordNote(...)
   table.insert(self.notes, { ... })

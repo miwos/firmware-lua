@@ -37,6 +37,15 @@ function Chords:init()
 end
 
 ---@param note MidiNoteOn
+Chords:on('input1:noteOn', function(self, note)
+  if self.listening then
+    self:listen(note)
+  else
+    self:playNextChord()
+  end
+end)
+
+---@param note MidiNoteOn
 function Chords:listen(note)
   local time = Timer.now()
   if time - self.lastNoteTime > self.maxNoteInterval then
@@ -54,15 +63,6 @@ function Chords:listen(note)
       self.chords[self.props.chord] = self.listeningNotes
     end
   )
-end
-
----@param note MidiNoteOn
-function Chords:input1_noteOn(note)
-  if self.listening then
-    self:listen(note)
-  else
-    self:playNextChord()
-  end
 end
 
 ---@param index number
