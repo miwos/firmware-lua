@@ -8,13 +8,10 @@ local PropBase = require('Prop.PropBase')
 local PropNumber = class(PropBase)
 
 function PropNumber:constructor(args)
-  local args = args or {}
-  PropNumber.super.constructor(self, args)
-
   self.min = args.min or 0
   self.max = args.max or 127
   self.step = args.step
-  self.value = args.default or self.min
+  self.default = args.default or self.min
 end
 
 ---Convert a raw encoder value to a scaled prop value.
@@ -41,9 +38,10 @@ function PropNumber:encodeValue(value)
 end
 
 ---Return a string representation of the value.
+---@param value number
 ---@return string
-function PropNumber:getDisplayValue()
-  return utils.isInt(self.step) and string.format('%i', self.value)
+function PropNumber:getDisplayValue(value)
+  return utils.isInt(self.step) and string.format('%i', value)
     or string.format('%.2f', self.value)
 end
 

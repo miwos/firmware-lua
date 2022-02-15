@@ -1,13 +1,12 @@
 local VelocitySplit = Modules.create('VelocitySplit')
-local utils = require('utils')
 
 function VelocitySplit:init()
-  self:defineProps({
-    thresh = Prop.Number({ default = 63, min = 0, max = 127, step = 1 }),
-  })
-
   self.usedOutputs = {}
 end
+
+VelocitySplit:defineProps({
+  thresh = Prop.Number({ default = 63, min = 0, max = 127, step = 1 }),
+})
 
 ---@param message MidiMessage
 VelocitySplit:on('input1:*', function(self, message)

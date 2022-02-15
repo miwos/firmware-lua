@@ -2,11 +2,6 @@
 local Input = Modules.create('Input')
 
 function Input:init()
-  self:defineProps({
-    device = Prop.Number({ min = 1, max = 16, step = 1, default = 1 }),
-    cable = Prop.Number({ min = 1, max = 16, step = 1 }),
-  })
-
   self.inputListener = function(...)
     self:handleInput(...)
   end
@@ -14,8 +9,14 @@ function Input:init()
   Midi.addInputListener(self.inputListener)
 end
 
+Input:defineProps({
+  device = Prop.Number({ min = 1, max = 16, step = 1, default = 1 }),
+  cable = Prop.Number({ min = 1, max = 16, step = 1 }),
+})
+
 function Input:handleInput(index, message, cable)
   local isSameDevice = index == self.props.device
+  -- todo: fix, why is this commented out?
   -- local isSameCable = cable == nil or cable == self.props.cable
   if isSameDevice then
     self:output(1, message)

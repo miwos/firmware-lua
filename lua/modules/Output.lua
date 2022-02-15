@@ -1,29 +1,16 @@
 ---@class ModuleOutput : Module
 local Output = Modules.create('Output')
 
-function Output:init()
-  self._unfinishedNotes = {}
+Output:defineProps({
+  device = Prop.Number({ min = 1, max = 16, step = 1, default = 1 }),
+  cable = Prop.Number({ min = 1, max = 16, step = 1 }),
+})
 
-  self:defineProps({
-    device = Prop.Number({
-      min = 1,
-      max = 16,
-      step = 1,
-      default = 1,
-      onChange = function()
-        self:__finishNotes()
-      end,
-    }),
-    cable = Prop.Number({
-      min = 1,
-      max = 16,
-      step = 1,
-      onChange = function()
-        self:__finishNotes()
-      end,
-    }),
-  })
-end
+Output:on('prop:beforeChange', function(self)
+  -- Finish the notes *before* either `device` or `cable` has changed, so we can
+  -- send all unfinished notes to their correct location.
+  self:__finishNotes()
+end)
 
 Output:on('input1:*', function(self, message)
   self:output(1, message)

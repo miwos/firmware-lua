@@ -6,23 +6,26 @@ local propChangedTimers = {}
 local propChangedTimeout = 1000 -- ms
 
 ---Display the prop name (default behaviour).
----@param index any
----@param prop any
-function Interface._displayPropName(index, prop)
-  Displays.write(index, prop.name)
+---@param index number
+---@param name string
+function Interface._displayPropName(index, name)
+  Displays.write(index, name)
 end
 
 ---Display the prop value and switch back to displaying the prop name if the
 ---value has not been changed for a certain time.
-function Interface._displayPropValue(index, prop)
-  Displays.write(index, prop:getDisplayValue())
-
+---@param index number
+---@param name string
+---@param value number
+function Interface._displayPropValue(index, name, value)
+  Displays.write(index, value)
   local timerId = propChangedTimers[index]
+
   if timerId == nil then
     propChangedTimers[index] = Timer.schedule(
       Timer.now() + propChangedTimeout,
       function()
-        Displays.write(index, prop.name)
+        Displays.write(index, name)
         propChangedTimers[index] = nil
       end
     )
@@ -57,8 +60,9 @@ end
 
 ---Check if the prop is mentioned in the interface description of the patch, and
 ---if so, write the prop in the corresponding display.
+---@param instance Module
 ---@param prop Prop The prop that has changed.
-function Interface.handlePropChange(prop, shouldWriteValue)
+function Interface.handlePropChange(instance, prop, value, shouldWriteValue)
   local patch = Patches.activePatch
   if not (patch and patch.mapping) then
     return
@@ -66,10 +70,10 @@ function Interface.handlePropChange(prop, shouldWriteValue)
 
   local encoders = patch.mapping[Interface.currentPageIndex].encoders
   for index, encoder in pairs(encoders) do
-    if encoder[1] == prop.instance.__id and encoder[2] == prop.name then
-      Interface._displayPropValue(index, prop)
+    if encoder[1] == instance.__id and encoder[2] == prop.name then
+      Interface._displayPropValue(index, prop.name, prop:getDisplayValue(value))
       if shouldWriteValue then
-        Encoders.write(index, prop:getRawValue())
+        Encoders.write(index, prop:encodeValue(value))
       end
       break
     end
@@ -95,13 +99,13 @@ function Interface.handlePatchChange(patch)
         return
       end
 
-      local prop = instance.props._props[propName]
+      local prop = instance.__props[propName]
       if not prop then
         Log.warn('Prop `' .. propName .. "` doesn't exist.")
         return
       end
 
-      Encoders.write(index, prop:getRawValue())
+      Encoders.write(index, prop:encodeValue(instance.props[propName]))
       Displays.write(index, prop.name)
     else
       Displays.clear(index, '--')

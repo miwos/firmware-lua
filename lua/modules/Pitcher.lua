@@ -4,12 +4,12 @@ local utils = require('utils')
 local Pitcher = Modules.create('Pitcher')
 
 function Pitcher:init()
-  self:defineProps({
-    pitch = Prop.Number({ default = 0, min = -24, max = 24, step = 1 }),
-  })
-
   self.usedPitches = {}
 end
+
+Pitcher:defineProps({
+  pitch = Prop.Number({ default = 0, min = -24, max = 24, step = 1 }),
+})
 
 function Pitcher:sendNote(note)
   local pitchedNote = note.note + self.props.pitch

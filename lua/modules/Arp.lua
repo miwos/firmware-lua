@@ -6,26 +6,18 @@ local Arp = Modules.create('Arp')
 Arp.minGateDuration = 5 -- ms
 
 function Arp:init()
-  self:defineProps({
-    speed = Prop.Number({
-      default = 240,
-      min = 30,
-      max = 1300,
-      step = 1,
-      onChange = function(value)
-        self.interval = utils.bpmToMillis(value)
-      end,
-    }),
-    gate = Prop.Number({ default = 0.5, min = 0, max = 1 }),
-    hold = Prop.Number({ default = 0 }),
-  })
-
   self.notes = {}
   self.noteIndex = 1
   self.lastNoteTime = 0
   self.timerId = nil
   self.interval = 150
 end
+
+Arp:defineProps({
+  speed = Prop.Number({ default = 240, min = 30, max = 1300, step = 1 }),
+  gate = Prop.Number({ default = 0.5, min = 0, max = 1 }),
+  hold = Prop.Number({ default = 0 }),
+})
 
 ---@param note MidiNoteOn
 Arp:on('input1:noteOn', function(self, note)
@@ -47,6 +39,12 @@ end)
 Arp:on('input1:noteOff', function(self)
   self:clear()
   -- if not self.props.hold then self:clear() end
+end)
+
+Arp:on('prop:change', function(self, name, value)
+  if name == 'interval' then
+    self.interval = utils.bpmToMillis(value)
+  end
 end)
 
 function Arp:update()

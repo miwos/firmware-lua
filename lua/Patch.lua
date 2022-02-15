@@ -41,8 +41,8 @@ function Patch:_createMissingInstances()
 
       if definition.props then
         for name, value in pairs(definition.props) do
-          local prop = instance.props._props[name]
-          prop:setValue(value)
+          local prop = instance.__props[name]
+          prop:__setValue(instance, value)
         end
       end
     end
@@ -72,11 +72,11 @@ end
 
 function Patch:getProp(instanceId, propName)
   local instance = self.instances[instanceId]
-  return instance and instance.props._props[propName]
+  return instance and instance.__props[propName]
 end
 
 ---@param encoderIndex number
----@return Prop
+---@return number, string -- InstanceId and prop name.
 function Patch:getMappedProp(encoderIndex)
   if not self.mapping then
     return
@@ -90,16 +90,11 @@ function Patch:getMappedProp(encoderIndex)
   end
 
   local instanceId, propName = unpack(encoder)
-  return self:getProp(instanceId, propName)
+  return instanceId, propName
 end
 
-function Patch:clickProp(instanceId, propName)
-  local prop = self:getProp(instanceId, propName)
-  if not prop then
-    return
-  end
-
-  prop:click()
+function Patch:handlePropClick(instanceId, propName)
+  self.instances[instanceId].__emit('prop:change', propName)
 end
 
 ---@param data PatchData

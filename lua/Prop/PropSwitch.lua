@@ -2,15 +2,9 @@ local utils = require('utils')
 local PropBase = require('Prop.PropBase')
 
 ---@class PropSwitch : Prop
----@field min number
----@field max number
----@field step number|nil
 local PropSwitch = class(PropBase)
 
 function PropSwitch:constructor(args)
-  local args = args or {}
-  PropSwitch.super.constructor(self, args)
-
   self.states = args.states or 2
   self.value = args.default or 1
 end
@@ -33,8 +27,8 @@ end
 
 ---Return a string representation of the value.
 ---@return string
-function PropSwitch:getDisplayValue()
-  return tostring(self.value)
+function PropSwitch:getDisplayValue(value)
+  return tostring(value)
 end
 
 return PropSwitch

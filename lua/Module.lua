@@ -5,29 +5,51 @@ local utils = require('utils')
 ---@class Module : Class
 ---@field init function
 ---@field destroy function
----@field __id number
+---@field __id number Will be set in `Patch:_createMissingInstances()`
 ---@field __type string Will be set in `Miwos#createModule()`
 ---@field __events string Will be set in `Miwos#createModule()`
 local Module = class()
 
 Module.__hmrKeep = { 'props' }
--- Module.__events = {}
-
-function Module:on(event, callback)
-  self.__events[event] = callback
-end
 
 function Module:constructor()
-  self.props = {}
-  self._outputs = {}
-  self._unfinishedNotes = {}
+  self.__outputs = {}
+  self.__unfinishedNotes = {}
+  self.props = self:__createPropsProxy()
   utils.callIfExists(self.init, { self })
+end
+
+function Module:__createPropsProxy()
+  local mt = {}
+  local instance = self
+
+  function mt:__newindex(key, value)
+    self.__values[key] = value
+    instance.__props[key]:__setValue(self, value, true)
+  end
+
+  function mt:__index(key)
+    return self.__values[key]
+  end
+
+  return setmetatable({ __values = {} }, mt)
 end
 
 ---Define the properties that are available on the module.
 ---@param props table<string, Prop>
 function Module:defineProps(props)
-  self.props = Props(self, props)
+  for name, prop in pairs(props) do
+    prop.name = name
+  end
+  self.__props = props
+end
+
+function Module:on(event, callback)
+  self.__events[event] = callback
+end
+
+function Module:__emit(event, ...)
+  utils.callIfExists(self.__events[event], { self, ... })
 end
 
 ---Connect an output to the input of another Module.
@@ -35,8 +57,8 @@ end
 ---@param moduleId number The id of the module to connect to.
 ---@param moduleInput number The input index of the module to connect to.
 function Module:__connect(output, moduleId, moduleInput)
-  self._outputs[output] = self._outputs[output] or {}
-  table.insert(self._outputs[output], { moduleId, moduleInput })
+  self.__outputs[output] = self.__outputs[output] or {}
+  table.insert(self.__outputs[output], { moduleId, moduleInput })
 end
 
 ---Send data to all inputs connected to the output.
@@ -51,16 +73,16 @@ function Module:output(index, message)
     ---@type MidiNoteOn|MidiNoteOff
     local note = message
     local noteId = Midi.getNoteId(note.note, note.channel)
-    self._unfinishedNotes[index] = self._unfinishedNotes[index] or {}
-    self._unfinishedNotes[index][noteId] = note:is(Midi.NoteOn) and true or nil
+    self.__unfinishedNotes[index] = self.__unfinishedNotes[index] or {}
+    self.__unfinishedNotes[index][noteId] = note:is(Midi.NoteOn) and true or nil
   end
 
   self:__handleOutput(index, message)
 end
 
 function Module:__handleOutput(index, message)
-  if self._outputs[index] then
-    for _, input in pairs(self._outputs[index]) do
+  if self.__outputs[index] then
+    for _, input in pairs(self.__outputs[index]) do
       local inputId, inputIndex = unpack(input)
       local inputNode = Modules.get(inputId)
 
@@ -77,23 +99,17 @@ end
 function Module:__sendOutputToInput(message, module, index)
   Bridge.sendInput(module.__id, index, message)
 
-  local payload = { module, message }
   local numberedInput = 'input' .. index
-
-  utils.callIfExists(module.__events['input:*'], payload)
-  utils.callIfExists(module.__events['input:' .. message.name], payload)
-
-  utils.callIfExists(module.__events[numberedInput .. ':*'], payload)
-  utils.callIfExists(
-    module.__events[numberedInput .. ':' .. message.name],
-    payload
-  )
+  module:__emit('input:*', message)
+  module:__emit('input:' .. message.name, message)
+  module:__emit(numberedInput .. ':*', message)
+  module:__emit(numberedInput .. ':' .. message.name, message)
 end
 
 ---Finish unfinished midi notes to prevent midi panic.
 ---@param output? number
 function Module:__finishNotes(output)
-  for index, noteIds in pairs(self._unfinishedNotes) do
+  for index, noteIds in pairs(self.__unfinishedNotes) do
     if not output or index == output then
       for noteId in pairs(noteIds) do
         local note, channel = Midi.parseNoteId(noteId)
@@ -151,7 +167,7 @@ end
 
 ---Clear all connections.
 function Module:__clearConnections()
-  self._outputs = {}
+  self.__outputs = {}
 end
 
 function Module:__destroy()

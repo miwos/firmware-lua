@@ -4,10 +4,6 @@ local utils = require('utils')
 local ChordSplit = Modules.create('ChordSplit')
 
 function ChordSplit:init()
-  self:defineProps({
-    thresh = Prop.Number({ default = 3, min = 2, max = 5, step = 1 }),
-  })
-
   self.usedOutputs = {}
   self.notes = {}
 
@@ -15,6 +11,10 @@ function ChordSplit:init()
   self.maxNoteInterval = 25 -- ms
   self.timerId = nil
 end
+
+ChordSplit:defineProps({
+  thresh = Prop.Number({ default = 3, min = 2, max = 5, step = 1 }),
+})
 
 ---@param note MidiNoteOn
 ChordSplit:on('input1:noteOn', function(self, note)

@@ -1,6 +1,8 @@
 ---@class ModuleChords : Module
 local Chords = Modules.create('Chords')
 
+-- todo: fix
+
 function Chords:init()
   local countDefault = 3
 

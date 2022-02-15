@@ -2,13 +2,13 @@
 local Chorder = Modules.create('Chorder')
 
 function Chorder:init()
-  self:defineProps({
-    pitch1 = Prop.Number({ default = 6, min = -12, max = 12, step = 1 }),
-    pitch2 = Prop.Number({ default = -12, min = -12, max = 12, step = 1 }),
-  })
-
   self.notes = {}
 end
+
+Chorder:defineProps({
+  pitch1 = Prop.Number({ default = 6, min = -12, max = 12, step = 1 }),
+  pitch2 = Prop.Number({ default = -12, min = -12, max = 12, step = 1 }),
+})
 
 ---@param note MidiNoteOn
 Chorder:on('input1:noteOn', function(self, note)

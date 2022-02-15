@@ -1,15 +1,13 @@
-local utils = require('utils')
-
 ---@class ModuleSwitch : Module
 local Switch = Modules.create('Switch')
 
 function Switch:init()
-  self:defineProps({
-    state = Prop.Switch(),
-  })
-
   self.usedOutputs = {}
 end
+
+Switch:defineProps({
+  state = Prop.Switch(),
+})
 
 ---@param message MidiMessage
 Switch:on('input1:*', function(self, message)

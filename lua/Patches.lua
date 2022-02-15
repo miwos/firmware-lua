@@ -23,11 +23,3 @@ function Patches.update(name)
     Patches.activePatch:update(data)
   end
 end
-
-function Patches.changeProp(moduleId, propName, value)
-  local patch = Patches.activePatch
-  local prop = patch and patch:getProp(moduleId, propName)
-  if prop then
-    prop:setValue(value)
-  end
-end
