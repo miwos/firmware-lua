@@ -103,13 +103,24 @@ function Patch:update(data)
   self.connections = data.connections
   self.mapping = data.mapping
 
-  -- Remove old instances that are not part of the updated patch.
+  -- Remove unused instances and modules.
   local removeIds = {}
-  for id in pairs(self.instances) do
-    if not data.instances[id] then
+  local keepModules = {}
+
+  for id, instance in pairs(self.instances) do
+    if data.instances[id] then
+      keepModules[instance.__type] = true
+    else
       table.insert(removeIds, id)
     end
   end
+
+  for _, instance in pairs(self.instances) do
+    if not keepModules[instance.__type] then
+      _G._LOADED['modules.' .. instance.__type] = nil
+    end
+  end
+
   for _, id in pairs(removeIds) do
     self.instances[id] = nil
   end
