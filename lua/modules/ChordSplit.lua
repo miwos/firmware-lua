@@ -32,7 +32,7 @@ ChordSplit:on('input1:noteOn', function(self, note)
       self.timerId = nil
     end)
   else
-    Timer.reschedule(Timer.now() + self.maxNoteInterval)
+    Timer.reschedule(self.timerId, Timer.now() + self.maxNoteInterval)
   end
 end)
 

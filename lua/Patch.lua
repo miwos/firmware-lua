@@ -42,7 +42,18 @@ function Patch:_createMissingInstances()
       if definition.props then
         for name, value in pairs(definition.props) do
           local prop = instance.__props[name]
-          prop:__setValue(instance, value)
+          if prop then
+            prop:__setValue(instance, value)
+          else
+            Log.warn(
+              "Prop '"
+                .. name
+                .. "' doesn't exist on "
+                .. instance.__type
+                .. '@'
+                .. id
+            )
+          end
         end
       end
     end
@@ -53,7 +64,7 @@ end
 function Patch:_makeConnections()
   for _, connection in pairs(self.connections) do
     local fromId, output, toId, input = unpack(connection)
-    assert(self.instances[fromId], 'Module #' .. fromId .. " doesn't exist.")
+    assert(self.instances[fromId], 'Instance@' .. fromId .. " doesn't exist.")
     self.instances[fromId]:__connect(output, toId, input)
   end
 end

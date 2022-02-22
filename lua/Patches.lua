@@ -17,6 +17,25 @@ function Patches.load(name)
   return patch
 end
 
+function Patches.handlePropChange(instanceId, name, value)
+  if Patches.activePatch then
+    local instance = Patches.activePatch.instances[instanceId]
+    local prop = instance.__props[name]
+    if not prop then
+      Log.warn(
+        "Prop '"
+          .. name
+          .. "' doesn't exist on "
+          .. instance.__type
+          .. '@'
+          .. instance.__id
+      )
+    else
+      prop:__setValue(instance, value)
+    end
+  end
+end
+
 function Patches.update(name)
   if Patches.activePatch and Patches.activePatch.name == name then
     local data = loadfile('lua/patches/' .. name .. '.lua')

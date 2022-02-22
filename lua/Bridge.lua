@@ -1,27 +1,28 @@
+local Module = require('Module')
 Bridge = _G.Bridge or {}
 
----@param instanceId number
----@param index number
----@param message MidiMessage
-function Bridge.sendInput(instanceId, index, message)
-  Bridge._sendInputOutput(
-    'in',
-    instanceId,
-    index,
-    message.type,
-    unpack(message:serialize())
-  )
-end
+---comment
+---@param signal number
+---@param direction number
+---@param instanceId any
+---@param index any
+---@param message any
+function Bridge.sendInputOutput(signal, direction, instanceId, index, message)
+  -- local payload = signal == Module.SignalMidi
+  --   and {
+  --     message.type,
+  --     unpack(message:serialize()),
+  --   }
 
----@param instanceId number
----@param index number
----@param message MidiMessage
-function Bridge.sendOutput(instanceId, index, message)
-  Bridge._sendInputOutput(
-    'out',
-    instanceId,
-    index,
-    message.type,
-    unpack(message:serialize())
-  )
+  -- if payload then
+  --   Bridge._sendInputOutput(
+  --     signal,
+  --     direction,
+  --     instanceId,
+  --     index,
+  --     unpack(payload)
+  --   )
+  -- else
+  --   Bridge._sendInputOutput(signal, direction, instanceId, index)
+  -- end
 end

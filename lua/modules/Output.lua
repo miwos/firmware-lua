@@ -18,7 +18,7 @@ end)
 
 ---Override `Module.__handleOutput()` to send the message directly via midi.
 ---@param message MidiMessage
-function Output:__handleOutput(_, message)
+function Output:__handleOutput(_, _, message)
   local data1, data2, channel = unpack(message:serialize())
   Midi.send(
     self.props.device,

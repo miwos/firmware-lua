@@ -11,11 +11,18 @@ local utils = require('utils')
 local Module = class()
 
 Module.__hmrKeep = { 'props' }
+Module.DirectionIn = 1
+Module.DirectionOut = 2
+Module.SignalMidi = 1
+Module.SignalTrigger = 2
 
 function Module:constructor()
   self.__outputs = {}
   self.__unfinishedNotes = {}
   self.props = self:__createPropsProxy()
+  for name, prop in pairs(self.__props or {}) do
+    self.props.__values[name] = prop.default or 0
+  end
   utils.callIfExists(self.init, { self })
 end
 
@@ -25,7 +32,18 @@ function Module:__createPropsProxy()
 
   function mt:__newindex(key, value)
     self.__values[key] = value
-    instance.__props[key]:__setValue(self, value, true)
+    local prop = instance.__props[key]
+    if not prop then
+      Log.warn(
+        "Prop '"
+          .. key
+          .. "' doesn't exist on module '"
+          .. instance.__type
+          .. "'"
+      )
+    else
+      instance.__props[key]:__setValue(self, value, true)
+    end
   end
 
   function mt:__index(key)
@@ -44,10 +62,14 @@ function Module:defineProps(props)
   self.__props = props
 end
 
+---@param event string
+---@param callback function
 function Module:on(event, callback)
   self.__events[event] = callback
 end
 
+---@param event string
+---@param ... any
 function Module:__emit(event, ...)
   utils.callIfExists(self.__events[event], { self, ... })
 end
@@ -65,45 +87,53 @@ end
 ---@param index number The output index.
 ---@param message MidiMessage The midi message to send.
 function Module:output(index, message)
-  Bridge.sendOutput(self.__id, index, message)
+  local signal = message and Module.SignalMidi or Module.SignalTrigger
+  local direction = Module.DirectionOut
+  Bridge.sendInputOutput(signal, direction, self.__id, index, message)
 
-  local isNoteOn = message:is(Midi.NoteOn)
-  local isNoteOff = message:is(Midi.NoteOff)
-  if isNoteOn or isNoteOff then
-    ---@type MidiNoteOn|MidiNoteOff
-    local note = message
-    local noteId = Midi.getNoteId(note.note, note.channel)
-    self.__unfinishedNotes[index] = self.__unfinishedNotes[index] or {}
-    self.__unfinishedNotes[index][noteId] = note:is(Midi.NoteOn) and true or nil
+  if signal == 'midi' then
+    local isNoteOn = message:is(Midi.NoteOn)
+    local isNoteOff = message:is(Midi.NoteOff)
+    if isNoteOn or isNoteOff then
+      ---@type MidiNoteOn|MidiNoteOff
+      local note = message
+      local noteId = Midi.getNoteId(note.note, note.channel)
+      self.__unfinishedNotes[index] = self.__unfinishedNotes[index] or {}
+      self.__unfinishedNotes[index][noteId] = note:is(Midi.NoteOn) and true
+        or nil
+    end
   end
 
-  self:__handleOutput(index, message)
+  self:__handleOutput(signal, index, message)
 end
 
-function Module:__handleOutput(index, message)
+function Module:__handleOutput(signal, index, message)
   if self.__outputs[index] then
     for _, input in pairs(self.__outputs[index]) do
       local inputId, inputIndex = unpack(input)
-      local inputNode = Modules.get(inputId)
+      local inputInstance = Modules.get(inputId)
 
-      if inputNode then
-        self:__sendOutputToInput(message, inputNode, inputIndex)
+      if inputInstance then
+        self:__sendOutputToInput(signal, inputInstance, inputIndex, message)
       end
     end
   end
 end
 
 ---@param message MidiMessage
----@param module Module
+---@param instance Module
 ---@param index number
-function Module:__sendOutputToInput(message, module, index)
-  Bridge.sendInput(module.__id, index, message)
+function Module:__sendOutputToInput(signal, instance, index, message)
+  local direction = Module.DirectionIn
+  Bridge.sendInputOutput(signal, direction, instance.__id, index, message)
 
+  local name = message and message.name or 'trigger'
   local numberedInput = 'input' .. index
-  module:__emit('input:*', message)
-  module:__emit('input:' .. message.name, message)
-  module:__emit(numberedInput .. ':*', message)
-  module:__emit(numberedInput .. ':' .. message.name, message)
+
+  instance:__emit('input:*', index, message)
+  instance:__emit('input:' .. name, index, message)
+  instance:__emit(numberedInput .. ':*', message)
+  instance:__emit(numberedInput .. ':' .. name, message)
 end
 
 ---Finish unfinished midi notes to prevent midi panic.

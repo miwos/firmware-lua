@@ -42,7 +42,7 @@ end
 ---@return string
 function PropNumber:getDisplayValue(value)
   return utils.isInt(self.step) and string.format('%i', value)
-    or string.format('%.2f', self.value)
+    or string.format('%.2f', value)
 end
 
 return PropNumber

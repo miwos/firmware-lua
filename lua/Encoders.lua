@@ -24,7 +24,7 @@ function Encoders.handleClick(index)
     local instance = patch.instances[instanceId]
 
     if instance then
-      patch.instances[instanceId].__emit('prop:click', name)
+      instance:__emit('prop:click', name)
     end
   end
 end

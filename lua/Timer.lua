@@ -20,13 +20,15 @@ function Timer.cancel(eventId)
   if eventId == nil then
     return
   end
-  Timer._cancel(eventId)
+
   Timer.events[eventId] = nil
+  Timer._cancel(eventId)
 end
 
 ---Call an event's callback and clear the event.
 ---@param eventId integer
 function Timer.handleEmit(eventId)
-  utils.callIfExists(Timer.events[eventId])
+  local callback = Timer.events[eventId]
   Timer.events[eventId] = nil
+  utils.callIfExists(callback)
 end
