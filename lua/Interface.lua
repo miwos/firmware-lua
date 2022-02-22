@@ -2,7 +2,7 @@ Interface = {
   currentPageIndex = 1,
 }
 
-local propChangedTimers = {}
+local propChangedHandlers = {}
 local propChangedTimeout = 1000 -- ms
 
 ---Display the prop name (default behaviour).
@@ -19,19 +19,11 @@ end
 ---@param value number
 function Interface._displayPropValue(index, name, value)
   Displays.write(index, value)
-  local timerId = propChangedTimers[index]
-
-  if timerId == nil then
-    propChangedTimers[index] = Timer.schedule(
-      Timer.now() + propChangedTimeout,
-      function()
-        Displays.write(index, name)
-        propChangedTimers[index] = nil
-      end
-    )
-  else
-    Timer.reschedule(timerId, Timer.now() + propChangedTimeout)
-  end
+  Timer.cancel(propChangedHandlers[index])
+  propChangedHandlers[index] = Timer.schedule(function()
+    Displays.write(index, name)
+    propChangedHandlers[index] = nil
+  end, Timer.now() + propChangedTimeout)
 end
 
 function Interface.selectPage(index, shouldUpdateBridge)

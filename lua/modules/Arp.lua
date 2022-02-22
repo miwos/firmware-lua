@@ -61,15 +61,15 @@ function Arp:update()
   -- Check for nil because the notes might have been cleared in the meantime.
   if note ~= nil then
     self:output(1, Midi.NoteOn(unpack(note)))
-    Timer.schedule(Timer.now() + gateDuration, function()
+    Timer.schedule(function()
       self:output(1, Midi.NoteOff(unpack(note)))
-    end)
+    end, Timer.now() + gateDuration)
   end
 
   local _self = self
-  self.timerId = Timer.schedule(Timer.now() + self.interval, function()
+  self.timerId = Timer.schedule(function()
     Arp.update(_self)
-  end)
+  end, Timer.now() + self.interval)
 
   -- We increase the index by one, even though this may make it larger than the
   -- total number of notes, because new notes may have been added until the next

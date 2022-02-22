@@ -59,11 +59,8 @@ function utils.throttle(fn, interval)
     end
 
     if lastTime and now < lastTime + interval then
-      if not timerId then
-        timerId = Timer.schedule(now + interval, next)
-      else
-        Timer.reschedule(now + interval, next)
-      end
+      Timer.cancel(next)
+      Timer.schedule(next, now + interval)
     else
       lastTime = now
       next()

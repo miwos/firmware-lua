@@ -34,7 +34,7 @@ Pitcher:on('input1:noteOff', function(self, message)
     self.usedPitches[noteId] = nil
     self:output(1, Midi.NoteOff(pitchedNote, message.velocity, message.channel))
   else
-    Log.warn("Can't find pitch.")
+    -- Log.warn("Can't find pitch.")
   end
 end)
 

@@ -14,8 +14,8 @@ function Chords:init()
   self.chords = {}
   self.index = 1
 
-  self.listenTimerId = nil
-  self.stopNotesTimerId = nil
+  self.listenTimerHandler = nil
+  self.stopNotesTimerHandler = nil
 end
 
 Chords:defineProps({
@@ -56,24 +56,16 @@ function Chords:listen(note)
   table.insert(self.listeningNotes, note)
   self.lastNoteTime = time
 
-  if self.listenTimerId == nil then
-    self.listenTimerId = Timer.schedule(
-      Timer.now() + self.maxNoteInterval,
-      function()
-        self.listening = false
-        self.chords[self.props.chord] = self.listeningNotes
-        self.listenTimerId = nil
-      end
-    )
-  else
-    Timer.reschedule(self.listenTimerId, Timer.now() + self.maxNoteInterval)
-  end
+  Timer.cancel(self.listenTimerHandler)
+  Timer.schedule(function()
+    self.listening = false
+    self.chords[self.props.chord] = self.listeningNotes
+    self.listenTimerHandler = nil
+  end, Timer.now() + self.maxNoteInterval)
 end
 
 ---@param index number
 function Chords:playChord(index)
-  Log.info('play')
-
   local chord = self.chords[index]
   if not chord then
     return
@@ -83,9 +75,9 @@ function Chords:playChord(index)
     self:output(1, note)
   end
 
-  Timer.schedule(Timer.now() + 100, function()
+  Timer.schedule(function()
     self:__finishNotes()
-  end)
+  end, Timer.now() + 100)
 end
 
 function Chords:playNextChord()

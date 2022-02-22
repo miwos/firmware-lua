@@ -19,7 +19,7 @@ function DelayMessage:constructor(delay, message)
 end
 
 function DelayMessage:send()
-  self.timerId = Timer.schedule(Timer.now() + self.delay.props.time, function()
+  self.timerId = Timer.schedule(function()
     local isNoteOn = self.message:is(Midi.NoteOn)
     self.delay:output(1, self.message)
 
@@ -37,7 +37,7 @@ function DelayMessage:send()
     else
       self:send()
     end
-  end)
+  end, Timer.now() + self.delay.props.time)
 end
 
 function DelayMessage:destroy()

@@ -9,7 +9,7 @@ function ChordSplit:init()
 
   self.lastNoteTime = 0
   self.maxNoteInterval = 25 -- ms
-  self.timerId = nil
+  self.timerHandler = nil
 end
 
 ChordSplit:defineProps({
@@ -26,14 +26,10 @@ ChordSplit:on('input1:noteOn', function(self, note)
   self:addNote(note)
   self.lastNoteTime = time
 
-  if self.timerId == nil then
-    self.timerId = Timer.schedule(Timer.now() + self.maxNoteInterval, function()
-      self:split()
-      self.timerId = nil
-    end)
-  else
-    Timer.reschedule(self.timerId, Timer.now() + self.maxNoteInterval)
-  end
+  Timer.cancel(self.timerHandler)
+  self.timerHandler = Timer.schedule(function()
+    self:split()
+  end, Timer.now() + self.maxNoteInterval)
 end)
 
 ---@param note MidiNoteOff

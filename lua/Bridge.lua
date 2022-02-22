@@ -27,7 +27,7 @@ function Bridge.sendInputOutput(signal, direction, instanceId, index, message)
   end
 end
 
-Bridge.sendActiveOutputs = function()
+Bridge.sendActiveOutputs = utils.throttle(function()
   local activeOutputs = {}
 
   local patch = Patches.activePatch
@@ -42,4 +42,6 @@ Bridge.sendActiveOutputs = function()
   end
 
   Bridge._sendActiveOutputs(table.concat(activeOutputs, ','))
-end
+end, 50)
+
+-- Bridge.sendActiveOutputs = function() end
