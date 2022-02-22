@@ -1,6 +1,8 @@
 ---@class ModuleChords : Module
 local Chords = Modules.create('Chords')
 
+Chords.__hmrKeep = { 'props', 'chords' }
+
 -- todo: fix
 
 function Chords:init()
@@ -70,6 +72,8 @@ end
 
 ---@param index number
 function Chords:playChord(index)
+  Log.info('play')
+
   local chord = self.chords[index]
   if not chord then
     return
@@ -79,7 +83,7 @@ function Chords:playChord(index)
     self:output(1, note)
   end
 
-  self.stopNotesTimerId = Timer.schedule(Timer.now() + 500, function()
+  Timer.schedule(Timer.now() + 100, function()
     self:__finishNotes()
   end)
 end

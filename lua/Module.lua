@@ -5,9 +5,10 @@ local utils = require('utils')
 ---@class Module : Class
 ---@field init function
 ---@field destroy function
+---@field __type string Will be set in `Modules#create()`
+---@field __events string Will be set in `Modules#create()`
 ---@field __id number Will be set in `Patch:_createMissingInstances()`
----@field __type string Will be set in `Miwos#createModule()`
----@field __events string Will be set in `Miwos#createModule()`
+---@field __name string Will be set in `Patch:_createMissingInstances()`
 local Module = class()
 
 Module.__hmrKeep = { 'props' }
@@ -88,10 +89,8 @@ end
 ---@param message MidiMessage The midi message to send.
 function Module:output(index, message)
   local signal = message and Module.SignalMidi or Module.SignalTrigger
-  local direction = Module.DirectionOut
-  Bridge.sendInputOutput(signal, direction, self.__id, index, message)
 
-  if signal == 'midi' then
+  if signal == Module.SignalMidi then
     local isNoteOn = message:is(Midi.NoteOn)
     local isNoteOff = message:is(Midi.NoteOff)
     if isNoteOn or isNoteOff then
@@ -105,8 +104,12 @@ function Module:output(index, message)
   end
 
   self:__handleOutput(signal, index, message)
+  Bridge.sendActiveOutputs()
 end
 
+---@param signal number
+---@param index number
+---@param message MidiMessage
 function Module:__handleOutput(signal, index, message)
   if self.__outputs[index] then
     for _, input in pairs(self.__outputs[index]) do
@@ -114,7 +117,7 @@ function Module:__handleOutput(signal, index, message)
       local inputInstance = Modules.get(inputId)
 
       if inputInstance then
-        self:__sendOutputToInput(signal, inputInstance, inputIndex, message)
+        self:__sendOutputToInput(inputInstance, inputIndex, message)
       end
     end
   end
@@ -123,10 +126,7 @@ end
 ---@param message MidiMessage
 ---@param instance Module
 ---@param index number
-function Module:__sendOutputToInput(signal, instance, index, message)
-  local direction = Module.DirectionIn
-  Bridge.sendInputOutput(signal, direction, instance.__id, index, message)
-
+function Module:__sendOutputToInput(instance, index, message)
   local name = message and message.name or 'trigger'
   local numberedInput = 'input' .. index
 
@@ -143,7 +143,11 @@ function Module:__finishNotes(output)
     if not output or index == output then
       for noteId in pairs(noteIds) do
         local note, channel = Midi.parseNoteId(noteId)
-        self:__handleOutput(index, Midi.NoteOff(note, 0, channel))
+        self:__handleOutput(
+          Module.SignalMidi,
+          index,
+          Midi.NoteOff(note, 0, channel)
+        )
       end
     end
   end

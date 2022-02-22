@@ -37,6 +37,7 @@ function Patch:_createMissingInstances()
       ---@type Module
       local instance = definition.Module()
       instance.__id = id
+      instance.__name = instance.__type .. '@' .. instance.__id
       self.instances[id] = instance
 
       if definition.props then

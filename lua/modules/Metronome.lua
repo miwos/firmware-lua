@@ -15,7 +15,6 @@ function Metronome:tick()
   self:output(1)
 
   local time = self.lastTime + self.props.time
-  Timer.cancel(self.timerId)
   self.timerId = Timer.schedule(time, function()
     self:tick()
   end)
