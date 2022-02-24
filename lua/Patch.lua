@@ -148,7 +148,7 @@ function Patch:update(data)
 end
 
 ---Update a single module instance.
----@param id any
+---@param id number
 ---@param instance Module
 ---@param NewModule Module
 function Patch:_updateInstance(id, instance, NewModule)
@@ -160,6 +160,7 @@ function Patch:_updateInstance(id, instance, NewModule)
   newInstance.__id = id
 
   self.instances[id] = newInstance
+  Bridge.sendUpdateInstance(id)
 end
 
 ---Update all module instances of the specified Module.
