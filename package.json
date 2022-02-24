@@ -4,9 +4,8 @@
     "dev": "node --trace-uncaught ./scripts/sync-files.js"
   },
   "dependencies": {
+    "async-osc": "file:../../async-osc",
+    "chokidar": "^3.5.2",
     "lua-on-arduino": "file:../../lua-on-arduino/desktop"
-  },
-  "devDependencies": {
-    "chokidar": "^3.5.2"
   }
 }
