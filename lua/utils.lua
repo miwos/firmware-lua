@@ -1,4 +1,8 @@
-local utils = {}
+local loaUtils = require('loa_firmware.utils')
+
+local utils = {
+  tableToJson = loaUtils.tableToJson,
+}
 
 ---Call a function if it exists.
 ---@param fn function

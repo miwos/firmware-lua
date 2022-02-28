@@ -1,20 +1,29 @@
-local Metronome = require('modules.Metronome')
+local Input = require('modules.Input')
+local Output = require('modules.Output')
 
 return {
   instances = {
     [1] = {
-      Module = Metronome,
+      Module = Input,
       props = {
-        time = 2000,
+        device = 4,
+        cable = 1,
+      },
+    },
+    [2] = {
+      Module = Output,
+      props = {
+        device = 2,
+        cable = 1,
       },
     },
   },
-  connections = {},
+  connections = {
+    { 1, 1, 2, 1 },
+  },
   mapping = {
     {
-      encoders = {
-        [1] = { 1, 'time' },
-      },
+      encoders = {},
     },
     {
       encoders = {},

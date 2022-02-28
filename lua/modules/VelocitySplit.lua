@@ -1,4 +1,4 @@
-local VelocitySplit = Modules.create('VelocitySplit')
+local VelocitySplit = Modules.create('VelocitySplit', { shape = 'Split' })
 
 function VelocitySplit:init()
   self.usedOutputs = {}

@@ -8,6 +8,7 @@ local PropBase = require('Prop.PropBase')
 local PropNumber = class(PropBase)
 
 function PropNumber:constructor(args)
+  args = args or {}
   self.min = args.min or 0
   self.max = args.max or 127
   self.step = args.step
@@ -43,6 +44,15 @@ end
 function PropNumber:getDisplayValue(value)
   return utils.isInt(self.step) and string.format('%i', value)
     or string.format('%.2f', value)
+end
+
+function PropNumber:serialize()
+  return {
+    min = self.min,
+    max = self.max,
+    step = self.step,
+    default = self.default,
+  }
 end
 
 return PropNumber

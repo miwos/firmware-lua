@@ -1,5 +1,5 @@
 ---@class ModulePitchFrom : Module
-local PitchFrom = Modules.create('PitchFrom')
+local PitchFrom = Modules.create('PitchFrom', { shape = 'PitchFrom' })
 
 function PitchFrom:init()
   self.usedPitches = {}

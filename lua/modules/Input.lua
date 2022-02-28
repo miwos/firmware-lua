@@ -1,5 +1,5 @@
 ---@class ModuleInput : Module
-local Input = Modules.create('Input')
+local Input = Modules.create('Input', { shape = 'Input' })
 
 function Input:init()
   self.inputListener = function(...)

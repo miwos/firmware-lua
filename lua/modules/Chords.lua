@@ -1,5 +1,5 @@
 ---@class ModuleChords : Module
-local Chords = Modules.create('Chords')
+local Chords = Modules.create('Chords', { shape = 'Chords' })
 
 Chords.__hmrKeep = { 'props', 'chords' }
 

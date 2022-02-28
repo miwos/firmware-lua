@@ -1,7 +1,5 @@
-local utils = require('utils')
-
 ---@class ModuleChordSplit : Module
-local ChordSplit = Modules.create('ChordSplit')
+local ChordSplit = Modules.create('ChordSplit', { shape = 'Split' })
 
 function ChordSplit:init()
   self.usedOutputs = {}

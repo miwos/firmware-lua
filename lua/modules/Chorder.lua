@@ -1,5 +1,5 @@
 ---@class ModuleChorder : Module
-local Chorder = Modules.create('Chorder')
+local Chorder = Modules.create('Chorder', { shape = 'Effect' })
 
 function Chorder:init()
   self.notes = {}

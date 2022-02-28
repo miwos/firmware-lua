@@ -1,7 +1,7 @@
 local utils = require('utils')
 
 ---@class ModuleArp : Module
-local Arp = Modules.create('Arp')
+local Arp = Modules.create('Arp', { shape = 'Arp' })
 
 Arp.minGateDuration = 5 -- ms
 

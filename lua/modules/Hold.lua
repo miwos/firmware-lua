@@ -1,5 +1,5 @@
 ---@class ModuleHold : Module
-local Hold = Modules.create('Hold')
+local Hold = Modules.create('Hold', { shape = 'Transform' })
 
 function Hold:init()
   self.notes = {}

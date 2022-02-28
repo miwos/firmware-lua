@@ -1,5 +1,5 @@
 ---@class ModuleMetronome : Module
-local Metronome = Modules.create('Metronome')
+local Metronome = Modules.create('Metronome', { shape = 'Metronome' })
 
 function Metronome:init()
   self.timerId = nil

@@ -29,7 +29,7 @@ end
 local function valueToJson(value)
   local valueType = type(value)
   local str = isPrimitve(value) and tostring(value) or doubleQuote(valueType)
-  return valueType == 'string' and doubleQuote(quote(str)) or str
+  return valueType == 'string' and doubleQuote(str) or str
 end
 
 ---Return a json representation of the key.
@@ -42,11 +42,13 @@ local function keyToJson(key)
   return (not keyIsPrimitve or keyType == 'number') and bracket(str) or str
 end
 
+local utils = {}
+
 ---Convert a table into a json representation.
 ---based on https://stackoverflow.com/a/64796533/12207499, thanks Francisco!
 ---@param t table
 ---@return string
-local function tableToJson(t, done)
+function utils.tableToJson(t, done)
   done = done or {}
   done[t] = true
 
@@ -56,7 +58,11 @@ local function tableToJson(t, done)
     if type(value) == 'table' and not done[value] then
       done[value] = true
       str = str
-        .. string.format('"%s":%s', keyToJson(key), tableToJson(value, done))
+        .. string.format(
+          '"%s":%s',
+          keyToJson(key),
+          utils.tableToJson(value, done)
+        )
 
       done[value] = nil
     else
@@ -72,7 +78,7 @@ local function tableToJson(t, done)
 end
 
 ---Generate a json representation of the value.
-local function dump(...)
+function utils.dump(...)
   local args = { ... }
   local json = ''
   for i = 1, select('#', ...) do
@@ -80,10 +86,11 @@ local function dump(...)
     json = json
       .. (i > 1 and ', ' or '')
       .. (
-        type(value) == 'table' and tableToJson(value) or valueToJson(value)
+        type(value) == 'table' and utils.tableToJson(value)
+        or valueToJson(value)
       )
   end
   return bracket(json)
 end
 
-return dump
+return utils

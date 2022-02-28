@@ -1,4 +1,4 @@
-local dump = require('loa_firmware.dump')
+local utils = require('loa_firmware.utils')
 
 Log = _G.Log or {}
 
@@ -31,6 +31,6 @@ function Log.info(...)
 end
 
 function Log.dump(...)
-  local jsonDump = dump(...)
+  local jsonDump = utils.dump(...)
   Log._log(LogType.Dump, jsonDump)
 end

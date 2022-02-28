@@ -5,6 +5,7 @@ local PropBase = require('Prop.PropBase')
 local PropSwitch = class(PropBase)
 
 function PropSwitch:constructor(args)
+  args = args or {}
   self.states = args.states or 2
   self.value = args.default or 1
 end
@@ -29,6 +30,13 @@ end
 ---@return string
 function PropSwitch:getDisplayValue(value)
   return tostring(value)
+end
+
+function PropSwitch:serialize()
+  return {
+    states = self.states,
+    default = self.default,
+  }
 end
 
 return PropSwitch

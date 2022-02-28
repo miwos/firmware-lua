@@ -5,6 +5,7 @@ local class = require('class')
 ---@field encodeValue function
 ---@field decodeValue function
 ---@field getDisplayValue function
+---@field serialize function
 ---@field default number
 local PropBase = class()
 

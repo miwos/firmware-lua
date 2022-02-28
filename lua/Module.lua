@@ -9,6 +9,7 @@ local utils = require('utils')
 ---@field __events string Will be set in `Modules#create()`
 ---@field __id number Will be set in `Patch:_createMissingInstances()`
 ---@field __name string Will be set in `Patch:_createMissingInstances()`
+---@field __info { shape: string }
 local Module = class()
 
 Module.__hmrKeep = { 'props' }
@@ -114,7 +115,8 @@ function Module:__handleOutput(signal, index, message)
   if self.__outputs[index] then
     for _, input in pairs(self.__outputs[index]) do
       local inputId, inputIndex = unpack(input)
-      local inputInstance = Modules.get(inputId)
+      local inputInstance = Patches.activePatch
+        and Patches.activePatch.instances[inputId]
 
       if inputInstance then
         self:__sendOutputToInput(inputInstance, inputIndex, message)

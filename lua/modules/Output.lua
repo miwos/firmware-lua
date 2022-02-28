@@ -1,5 +1,5 @@
 ---@class ModuleOutput : Module
-local Output = Modules.create('Output')
+local Output = Modules.create('Output', { shape = 'Output' })
 
 Output:defineProps({
   device = Prop.Number({ min = 1, max = 16, step = 1, default = 1 }),

@@ -11,3 +11,5 @@ require('Modules')
 require('Miwos')
 
 Patches.load('patch1')
+
+Modules.getInfo('Input')

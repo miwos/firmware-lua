@@ -1,5 +1,5 @@
 ---@class ModuleSwitch : Module
-local Switch = Modules.create('Switch')
+local Switch = Modules.create('Switch', { shape = 'Split' })
 
 function Switch:init()
   self.usedOutputs = {}
