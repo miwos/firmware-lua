@@ -43,5 +43,3 @@ Bridge.sendActiveOutputs = utils.throttle(function()
 
   Bridge._sendActiveOutputs(table.concat(activeOutputs, ','))
 end, 50)
-
--- Bridge.sendActiveOutputs = function() end
