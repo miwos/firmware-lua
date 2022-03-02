@@ -8,6 +8,7 @@ require('Prop.Prop')
 require('Interface')
 require('Patches')
 require('Modules')
+require('InputOutput')
 require('Miwos')
 
 Patches.load('patch1')

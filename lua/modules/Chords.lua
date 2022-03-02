@@ -18,6 +18,8 @@ function Chords:init()
   self.stopNotesTimerHandler = nil
 end
 
+Chords:defineInOut({ Input.Midi, Input.Trigger, Output.Midi })
+
 Chords:defineProps({
   count = Prop.Number({ max = 16, default = 3, step = 1 }),
   chord = Prop.Switch({ states = 3 }),

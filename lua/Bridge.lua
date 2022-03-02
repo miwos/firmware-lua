@@ -1,4 +1,3 @@
-local Module = require('Module')
 local utils = require('utils')
 Bridge = _G.Bridge or {}
 
@@ -8,7 +7,7 @@ Bridge = _G.Bridge or {}
 ---@param index any
 ---@param message any
 function Bridge.sendInputOutput(signal, direction, instanceId, index, message)
-  local payload = signal == Module.SignalMidi
+  local payload = signal == Signal.Midi
     and {
       message.type,
       unpack(message:serialize()),

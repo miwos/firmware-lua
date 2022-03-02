@@ -9,6 +9,8 @@ function Input:init()
   Midi.addInputListener(self.inputListener)
 end
 
+Input:defineInOut({ Output.Midi })
+
 Input:defineProps({
   device = Prop.Number({ min = 1, max = 16, step = 1, default = 1 }),
   cable = Prop.Number({ min = 1, max = 16, step = 1 }),

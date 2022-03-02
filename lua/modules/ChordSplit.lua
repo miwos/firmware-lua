@@ -10,6 +10,8 @@ function ChordSplit:init()
   self.timerHandler = nil
 end
 
+ChordSplit:defineInOut({ Input.Midi, Output.Midi, Output.Midi })
+
 ChordSplit:defineProps({
   thresh = Prop.Number({ default = 3, min = 2, max = 5, step = 1 }),
 })

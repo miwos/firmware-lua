@@ -5,6 +5,8 @@ function Switch:init()
   self.usedOutputs = {}
 end
 
+Switch:defineInOut({ Input.Midi, Output.Midi, Output.Midi })
+
 Switch:defineProps({
   state = Prop.Switch(),
 })

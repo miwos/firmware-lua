@@ -6,7 +6,9 @@
     "Timer",
     "Patches",
     "Modules",
-    "Bridge"
+    "Bridge",
+    "Signal",
+    "Direction"
   ],
   "Lua.runtime.version": "Lua 5.1",
   "[lua]": {

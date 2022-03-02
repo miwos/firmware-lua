@@ -1,5 +1,4 @@
 local class = require('class')
-local Props = require('Props')
 local utils = require('utils')
 
 ---@class Module : Class
@@ -10,17 +9,14 @@ local utils = require('utils')
 ---@field __id number Will be set in `Patch:_createMissingInstances()`
 ---@field __name string Will be set in `Patch:_createMissingInstances()`
 ---@field __info { shape: string }
+---@field __inputsOutputs { direction: number, signal: number }[]
 local Module = class()
 
 Module.__hmrKeep = { 'props' }
-Module.DirectionIn = 1
-Module.DirectionOut = 2
-Module.SignalMidi = 1
-Module.SignalTrigger = 2
 
 function Module:constructor()
-  self.__outputs = {}
   self.__unfinishedNotes = {}
+  self.__outputs = {}
   self.props = self:__createPropsProxy()
   for name, prop in pairs(self.__props or {}) do
     self.props.__values[name] = prop.default or 0
@@ -53,6 +49,18 @@ function Module:__createPropsProxy()
   end
 
   return setmetatable({ __values = {} }, mt)
+end
+
+---Define the inputs and outputs that are available on the module.
+---@param inputsOutputs InputOutput[]
+function Module:defineInOut(inputsOutputs)
+  local indexes = { [Direction.In] = 1, [Direction.Out] = 1 }
+  for _, inputOutput in pairs(inputsOutputs) do
+    local index = indexes[inputOutput.direction]
+    inputOutput.index = index
+    indexes[inputOutput.direction] = index + 1
+  end
+  self.__inputsOutputs = inputsOutputs
 end
 
 ---Define the properties that are available on the module.
@@ -89,9 +97,9 @@ end
 ---@param index number The output index.
 ---@param message MidiMessage The midi message to send.
 function Module:output(index, message)
-  local signal = message and Module.SignalMidi or Module.SignalTrigger
+  local signal = message and Signal.Midi or Signal.Trigger
 
-  if signal == Module.SignalMidi then
+  if signal == Signal.Midi then
     local isNoteOn = message:is(Midi.NoteOn)
     local isNoteOff = message:is(Midi.NoteOff)
     if isNoteOn or isNoteOff then
@@ -145,11 +153,7 @@ function Module:__finishNotes(output)
     if not output or index == output then
       for noteId in pairs(noteIds) do
         local note, channel = Midi.parseNoteId(noteId)
-        self:__handleOutput(
-          Module.SignalMidi,
-          index,
-          Midi.NoteOff(note, 0, channel)
-        )
+        self:__handleOutput(Signal.Midi, index, Midi.NoteOff(note, 0, channel))
       end
     end
   end

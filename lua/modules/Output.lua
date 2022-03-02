@@ -1,6 +1,8 @@
 ---@class ModuleOutput : Module
 local Output = Modules.create('Output', { shape = 'Output' })
 
+Output:defineInOut({ Input.Midi })
+
 Output:defineProps({
   device = Prop.Number({ min = 1, max = 16, step = 1, default = 1 }),
   cable = Prop.Number({ min = 1, max = 16, step = 1 }),

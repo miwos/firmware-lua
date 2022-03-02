@@ -48,6 +48,8 @@ function Delay:init()
   self.messages = {}
 end
 
+Delay:defineInOut({ Input.Midi, Output.Midi })
+
 Delay:defineProps({
   time = Prop.Number({ default = 500, min = 0, max = 1000, step = 1 }),
   feed = Prop.Number({ min = 0, max = 100, step = 1 }),

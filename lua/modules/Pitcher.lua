@@ -7,6 +7,8 @@ function Pitcher:init()
   self.usedPitches = {}
 end
 
+Pitcher:defineInOut({ Input.Midi, Output.Midi })
+
 Pitcher:defineProps({
   pitch = Prop.Number({ default = 0, min = -24, max = 24, step = 1 }),
 })

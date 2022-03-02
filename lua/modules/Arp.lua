@@ -13,6 +13,8 @@ function Arp:init()
   self.interval = 150
 end
 
+Arp:defineInOut({ Input.Midi, Output.Midi })
+
 Arp:defineProps({
   speed = Prop.Number({ default = 240, min = 30, max = 1300, step = 1 }),
   gate = Prop.Number({ default = 0.5, min = 0, max = 1 }),

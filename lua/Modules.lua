@@ -23,6 +23,8 @@ function Modules.getInfo(id)
   local module = require('modules.' .. id)
 
   local info = module.__info or {}
+  info.inputsOutputs = module.__inputsOutputs
+
   info.props = {}
   if module.__props then
     for name, prop in pairs(module.__props) do

@@ -7,6 +7,8 @@ function Hold:init()
   self.maxNoteInterval = 100
 end
 
+Hold:defineInOut({ Input.Midi, Output.Midi })
+
 ---@param note MidiNoteOn
 Hold:on('input1:noteOn', function(self, note)
   local time = Timer.now()

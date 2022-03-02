@@ -4,6 +4,8 @@ function VelocitySplit:init()
   self.usedOutputs = {}
 end
 
+VelocitySplit:defineInOut({ Input.Midi, Output.Midi, Output.Midi })
+
 VelocitySplit:defineProps({
   thresh = Prop.Number({ default = 63, min = 0, max = 127, step = 1 }),
 })

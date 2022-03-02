@@ -6,6 +6,8 @@ function PitchFrom:init()
   self.pitch = 0
 end
 
+PitchFrom:defineInOut({ Input.Midi, Input.Midi, Output.Midi })
+
 PitchFrom:defineProps({
   key = Prop.Number({ min = 0, max = 12, step = 1 }),
 })
