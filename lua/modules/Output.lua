@@ -4,8 +4,8 @@ local Output = Modules.create('Output', { shape = 'Output' })
 Output:defineInOut({ Input.Midi })
 
 Output:defineProps({
-  device = Prop.Number({ min = 1, max = 16, step = 1, default = 1 }),
-  cable = Prop.Number({ min = 1, max = 16, step = 1 }),
+  device = Prop.Number({ show = false, min = 1, max = 16, step = 1 }),
+  cable = Prop.Number({ show = false, min = 1, max = 16, step = 1 }),
 })
 
 Output:on('prop:beforeChange', function(self)

@@ -1,6 +1,6 @@
 local class = require('class')
 
----@class Prop
+---@class Prop : Class
 ---@field name string Will be set in `Module#defineProps()`
 ---@field encodeValue function
 ---@field decodeValue function

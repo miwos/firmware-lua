@@ -6,6 +6,7 @@ local PropSwitch = class(PropBase)
 
 function PropSwitch:constructor(args)
   args = args or {}
+  self.show = args.show == nil and true or args.show
   self.states = args.states or 2
   self.value = args.default or 1
 end
@@ -34,6 +35,7 @@ end
 
 function PropSwitch:serialize()
   return {
+    show = self.show,
     states = self.states,
     default = self.default,
   }

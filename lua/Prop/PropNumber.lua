@@ -9,10 +9,11 @@ local PropNumber = class(PropBase)
 
 function PropNumber:constructor(args)
   args = args or {}
+  self.show = args.show == nil and true or args.show
   self.min = args.min or 0
   self.max = args.max or 127
   self.step = args.step
-  self.default = args.default or self.min
+  self.default = args.default == nil and self.min or args.default
 end
 
 ---Convert a raw encoder value to a scaled prop value.
@@ -48,6 +49,7 @@ end
 
 function PropNumber:serialize()
   return {
+    show = self.show,
     min = self.min,
     max = self.max,
     step = self.step,
