@@ -4,27 +4,24 @@ local class = require('class')
 ---@field name string Same as file name, will be set by `Patches.loadPatch()`.
 ---@field instances table<string, Module>
 ---@field connections number[]
----@field mapping MappingPage[]
+---@field encoders table<string, number[]>
 local Patch = class()
 
----@class PatchData
----@field instances table<string, PatchDataInstance>
+---@class PatchSerialized
+---@field instances table<string, InstanceSerialzied>
 ---@field connections number[]
----@field mapping MappingPage[]
+---@field encoders table<string, number[]>
 
----@class PatchDataInstance
----@field Module Module
+---@class InstanceSerialzied
+---@field Module string
 ---@field props table<string, number>
 
----@class MappingPage
----@field encoders table[]
-
 ---Initialize patch.
----@param data PatchData
-function Patch:constructor(data)
-  self.data = data
-  self.mapping = data.mapping
-  self.connections = data.connections
+---@param serialized PatchSerialized
+function Patch:constructor(serialized)
+  self.serialized = serialized
+  self.encoders = serialized.encoders
+  self.connections = serialized.connections
   self.instances = {}
   self:_createMissingInstances()
   self:_makeConnections()
@@ -32,10 +29,11 @@ end
 
 ---Initialize modules.
 function Patch:_createMissingInstances()
-  for id, definition in pairs(self.data.instances) do
+  for id, definition in pairs(self.serialized.instances) do
     if not self.instances[id] then
+      local Module = require('modules.' .. definition.Module)
       ---@type Module
-      local instance = definition.Module()
+      local instance = Module()
       instance.__id = id
       instance.__name = instance.__type .. '@' .. instance.__id
       self.instances[id] = instance
@@ -47,12 +45,11 @@ function Patch:_createMissingInstances()
             prop:__setValue(instance, value)
           else
             Log.warn(
-              "Prop '"
-                .. name
-                .. "' doesn't exist on "
-                .. instance.__type
-                .. '@'
-                .. id
+              string.format(
+                "Prop '%s' doesn't exist on %s.",
+                name,
+                instance.__name
+              )
             )
           end
         end
@@ -90,12 +87,12 @@ end
 ---@param encoderIndex number
 ---@return number, string -- InstanceId and prop name.
 function Patch:getMappedProp(encoderIndex)
-  if not self.mapping then
+  if not self.encoders then
     return
   end
 
-  local encoders = self.mapping[Interface.currentPageIndex].encoders
-  local encoder = encoders[encoderIndex]
+  local encodersPage = self.encoders[Interface.currentPageIndex]
+  local encoder = encodersPage[encoderIndex]
   if not encoder then
     Log.warn('Encoder #' .. encoderIndex .. " isn't mapped to anything.")
     return
@@ -109,18 +106,18 @@ function Patch:handlePropClick(instanceId, propName)
   self.instances[instanceId].__emit('prop:change', propName)
 end
 
----@param data PatchData
-function Patch:update(data)
-  self.data = data
-  self.connections = data.connections
-  self.mapping = data.mapping
+---@param serialized PatchSerialized
+function Patch:update(serialized)
+  self.serialized = serialized
+  self.connections = serialized.connections
+  self.encoders = serialized.encoders
 
   -- Remove unused instances and modules.
   local removeIds = {}
   local keepModules = {}
 
   for id, instance in pairs(self.instances) do
-    if data.instances[id] then
+    if serialized.instances[id] then
       keepModules[instance.__type] = true
     else
       table.insert(removeIds, id)

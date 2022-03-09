@@ -36,7 +36,7 @@ function Interface.selectPage(index, shouldUpdateBridge)
   end
 
   if shouldUpdateBridge then
-    Bridge.sendSelectMappingPage(index)
+    Bridge.sendSelectEncodersPage(index)
   end
 end
 
@@ -56,12 +56,12 @@ end
 ---@param prop Prop The prop that has changed.
 function Interface.handlePropChange(instance, prop, value, shouldWriteValue)
   local patch = Patches.activePatch
-  if not (patch and patch.mapping) then
+  if not (patch and patch.encoders) then
     return
   end
 
-  local encoders = patch.mapping[Interface.currentPageIndex].encoders
-  for index, encoder in pairs(encoders) do
+  local encodersPage = patch.encoders[Interface.currentPageIndex]
+  for index, encoder in pairs(encodersPage) do
     if encoder[1] == instance.__id and encoder[2] == prop.name then
       Interface._displayPropValue(index, prop.name, prop:getDisplayValue(value))
       if shouldWriteValue then
@@ -74,26 +74,32 @@ end
 
 ---@param patch Patch
 function Interface.handlePatchChange(patch)
-  if not patch.mapping then
+  if not patch.encoders then
     return
   end
 
-  local encoders = patch.mapping[Interface.currentPageIndex].encoders
+  local encodersPage = patch.encoders[Interface.currentPageIndex]
   for index = 1, 3 do
-    local encoder = encoders[index]
+    local encoder = encodersPage[index]
 
     if encoder then
       local instanceId, propName = unpack(encoder)
       local instance = patch.instances[instanceId]
 
       if not instance then
-        Log.warn('Module #' .. instanceId .. " doesn't exist.")
+        Log.warn(string.format("Instance %s doesn't exist.", instance.__name))
         return
       end
 
       local prop = instance.__props[propName]
       if not prop then
-        Log.warn('Prop `' .. propName .. "` doesn't exist.")
+        Log.warn(
+          string.format(
+            "Prop '%s' doesn't exist on instance %s",
+            propName,
+            instance.__name
+          )
+        )
         return
       end
 
