@@ -23,12 +23,7 @@ function Patches.handlePropChange(instanceId, name, value)
     local prop = instance.__props[name]
     if not prop then
       Log.warn(
-        "Prop '"
-          .. name
-          .. "' doesn't exist on "
-          .. instance.__type
-          .. '@'
-          .. instance.__id
+        string.format("Prop '%s' doesn't exist on %s", name, instance.__name)
       )
     else
       prop:__setValue(instance, value)

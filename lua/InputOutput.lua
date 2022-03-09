@@ -1,5 +1,5 @@
 Signal = { Midi = 1, Trigger = 2 }
-Direction = { In = 1, Out = 2, InOut = 3 }
+Direction = { In = 1, Out = 2 }
 
 ---@class InputOutput
 ---@field direction number

@@ -17,13 +17,14 @@ function Modules.create(name, info)
 end
 
 function Modules.getInfo(id)
-  ---@type Module
   local path = 'modules.' .. id
   local wasLoaded = _G._LOADED[path]
+  ---@type Module
   local module = require('modules.' .. id)
 
   local info = module.__info or {}
-  info.inputsOutputs = module.__inputsOutputs
+  info.inputs = module.__inputsDefinition
+  info.outputs = module.__outputsDefinition
 
   info.props = {}
   if module.__props then

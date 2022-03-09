@@ -9,7 +9,8 @@ local utils = require('utils')
 ---@field __id number Will be set in `Patch:_createMissingInstances()`
 ---@field __name string Will be set in `Patch:_createMissingInstances()`
 ---@field __info { shape: string }
----@field __inputsOutputs { direction: number, signal: number }[]
+---@field __inputsDefinition { signal: number }[]
+---@field __outputsDefinition { signal: number }[]
 local Module = class()
 
 Module.__hmrKeep = { 'props' }
@@ -33,11 +34,11 @@ function Module:__createPropsProxy()
     local prop = instance.__props[key]
     if not prop then
       Log.warn(
-        "Prop '"
-          .. key
-          .. "' doesn't exist on module '"
-          .. instance.__type
-          .. "'"
+        string.format(
+          "Prop '%s' doesn't exist on module %s.",
+          key,
+          instance.__type
+        )
       )
     else
       instance.__props[key]:__setValue(self, value, true)
@@ -54,21 +55,18 @@ end
 ---Define the inputs and outputs that are available on the module.
 ---@param inputsOutputs InputOutput[]
 function Module:defineInOut(inputsOutputs)
-  local indexes = { [Direction.In] = 1, [Direction.Out] = 1 }
+  local inputs = {}
+  local outputs = {}
+
   for i = 1, #inputsOutputs do
-    local direction = inputsOutputs[i].direction
-    local index = indexes[direction]
-    -- Create a copy, as each input/output of the same signal references to the
-    -- same table.
-    local original = inputsOutputs[i]
-    inputsOutputs[i] = {
-      direction = original.direction,
-      signal = original.signal,
-      index = index,
-    }
-    indexes[direction] = index + 1
+    local inputOutput = inputsOutputs[i]
+    local category = inputOutput.direction == Direction.In and inputs or outputs
+    -- We can omit the direction as the inputs/outputs are already grouped.
+    category[#category + 1] = { signal = inputOutput.signal }
   end
-  self.__inputsOutputs = inputsOutputs
+
+  self.__inputsDefinition = inputs
+  self.__outputsDefinition = outputs
 end
 
 ---Define the properties that are available on the module.
