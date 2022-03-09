@@ -55,10 +55,18 @@ end
 ---@param inputsOutputs InputOutput[]
 function Module:defineInOut(inputsOutputs)
   local indexes = { [Direction.In] = 1, [Direction.Out] = 1 }
-  for _, inputOutput in pairs(inputsOutputs) do
-    local index = indexes[inputOutput.direction]
-    inputOutput.index = index
-    indexes[inputOutput.direction] = index + 1
+  for i = 1, #inputsOutputs do
+    local direction = inputsOutputs[i].direction
+    local index = indexes[direction]
+    -- Create a copy, as each input/output of the same signal references to the
+    -- same table.
+    local original = inputsOutputs[i]
+    inputsOutputs[i] = {
+      direction = original.direction,
+      signal = original.signal,
+      index = index,
+    }
+    indexes[direction] = index + 1
   end
   self.__inputsOutputs = inputsOutputs
 end
