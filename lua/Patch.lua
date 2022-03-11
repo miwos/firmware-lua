@@ -117,6 +117,7 @@ function Patch:update(serialized)
   local keepModules = {}
 
   for id, instance in pairs(self.instances) do
+    -- Keep all modules that are also part of the updated patch.
     if serialized.instances[id] then
       keepModules[instance.__type] = true
     else
@@ -131,6 +132,7 @@ function Patch:update(serialized)
   end
 
   for _, id in pairs(removeIds) do
+    self.instances[id]:__destroy()
     self.instances[id] = nil
   end
 
