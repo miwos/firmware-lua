@@ -1,6 +1,6 @@
-require('Bridge')
 require('Timer')
 require('Encoders')
+require('Instances')
 require('Buttons')
 require('LEDs')
 require('Midi.Midi')

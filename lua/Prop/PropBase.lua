@@ -19,7 +19,7 @@ function PropBase:__setValue(instance, value, shouldWriteValue)
   instance.props.__values[self.name] = value
   instance:__emit('prop:change', self.name, value)
 
-  Bridge.sendProp(instance.__id, self.name, value)
+  Instances.updateProp(instance.__id, self.name, value)
   Interface.handlePropChange(instance, self, value, shouldWriteValue)
 end
 

@@ -157,7 +157,7 @@ function Patch:_updateInstance(id, instance, NewModule)
   newInstance.__id = id
 
   self.instances[id] = newInstance
-  Bridge.sendUpdateInstance(id)
+  Instances.updateInstance(id)
 end
 
 ---Update all module instances of the specified Module.

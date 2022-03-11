@@ -5,13 +5,6 @@ Interface = {
 local propChangedHandlers = {}
 local propChangedTimeout = 1000 -- ms
 
----Display the prop name (default behaviour).
----@param index number
----@param name string
-function Interface._displayPropName(index, name)
-  Displays.write(index, name)
-end
-
 ---Display the prop value and switch back to displaying the prop name if the
 ---value has not been changed for a certain time.
 ---@param index number
@@ -26,7 +19,35 @@ function Interface._displayPropValue(index, name, value)
   end, Timer.now() + propChangedTimeout)
 end
 
-function Interface.selectPage(index, shouldUpdateBridge)
+---@param patch Patch
+---@param index number The encoder index.
+---@param encoder table
+function Interface._displayEncoder(patch, index, encoder)
+  local instanceId, propName = unpack(encoder)
+  local instance = patch.instances[instanceId]
+
+  if not instance then
+    Log.warn(string.format("Instance@%s doesn't exist.", instanceId))
+    return
+  end
+
+  local prop = instance.__props[propName]
+  if not prop then
+    Log.warn(
+      string.format(
+        "Prop '%s' doesn't exist on instance %s",
+        propName,
+        instance.__name
+      )
+    )
+    return
+  end
+
+  Encoders.write(index, prop:encodeValue(instance.props[propName]))
+  Displays.write(index, prop.name)
+end
+
+function Interface.selectPage(index, updateApp)
   Interface.currentPageIndex = index
   Interface.handlePatchChange(Patches.activePatch)
 
@@ -35,8 +56,8 @@ function Interface.selectPage(index, shouldUpdateBridge)
     LEDs.toggle(i + 3, i == index)
   end
 
-  if shouldUpdateBridge then
-    Bridge.sendSelectEncodersPage(index)
+  if updateApp then
+    Encoders.selectPage(index)
   end
 end
 
@@ -81,30 +102,8 @@ function Interface.handlePatchChange(patch)
   local encodersPage = patch.encoders[Interface.currentPageIndex]
   for index = 1, 3 do
     local encoder = encodersPage[index]
-
     if encoder then
-      local instanceId, propName = unpack(encoder)
-      local instance = patch.instances[instanceId]
-
-      if not instance then
-        Log.warn(string.format("Instance %s doesn't exist.", instance.__name))
-        return
-      end
-
-      local prop = instance.__props[propName]
-      if not prop then
-        Log.warn(
-          string.format(
-            "Prop '%s' doesn't exist on instance %s",
-            propName,
-            instance.__name
-          )
-        )
-        return
-      end
-
-      Encoders.write(index, prop:encodeValue(instance.props[propName]))
-      Displays.write(index, prop.name)
+      Interface._displayEncoder(patch, index, encoder)
     else
       Displays.clear(index, '--')
     end

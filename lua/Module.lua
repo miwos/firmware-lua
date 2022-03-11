@@ -119,7 +119,7 @@ function Module:output(index, message)
   end
 
   self:__handleOutput(signal, index, message)
-  Bridge.sendActiveOutputs()
+  Instances.updateOutputs()
 end
 
 ---@param signal number
