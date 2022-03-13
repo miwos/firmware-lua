@@ -51,7 +51,6 @@ end
 
 function utils.throttle(fn, interval)
   local lastTime = 0
-  local timerId = nil
 
   return function(...)
     local args = { ... }
@@ -70,6 +69,24 @@ function utils.throttle(fn, interval)
       next()
     end
   end
+end
+
+---Check if a list of connections has a connection that is equal to the provided
+---connection.
+---@return boolean
+function utils.connectionsHas(connections, connection)
+  for _, otherConnection in pairs(connections) do
+    local equals = true
+    for i = 1, 4 do
+      if connection[i] ~= otherConnection[i] then
+        equals = false
+      end
+    end
+    if equals then
+      return true
+    end
+  end
+  return false
 end
 
 return utils
