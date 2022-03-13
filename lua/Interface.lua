@@ -52,7 +52,7 @@ function Interface.selectPage(index, updateApp)
   Interface.handlePatchChange(Patches.activePatch)
 
   for i = 1, 3 do
-    -- Mapping page leds are 4, 5, 6 (an offset of 3).
+    -- Encoder page leds are 4, 5, 6 (an offset of 3).
     LEDs.toggle(i + 3, i == index)
   end
 
@@ -61,13 +61,26 @@ function Interface.selectPage(index, updateApp)
   end
 end
 
+function Interface.selectPart(index, updateApp)
+  -- TODO: dont hardcode patch name
+  Patches.load('patch' .. index)
+
+  for i = 1, 3 do
+    LEDs.toggle(i, i == index)
+  end
+
+  if updateApp then
+    App.selectPart(index)
+  end
+end
+
 function Interface.handleClick(buttonIndex)
-  if buttonIndex == 4 then
-    Interface.selectPage(1, true)
-  elseif buttonIndex == 5 then
-    Interface.selectPage(2, true)
-  elseif buttonIndex == 6 then
-    Interface.selectPage(3, true)
+  if buttonIndex <= 3 then
+    Interface.selectPart(buttonIndex, true)
+  else
+    -- Button #4 selects page #1 (an offset of 3).
+    local pageIndex = buttonIndex - 3
+    Interface.selectPage(pageIndex, true)
   end
 end
 
@@ -75,7 +88,7 @@ end
 ---if so, write the prop in the corresponding display.
 ---@param instance Module
 ---@param prop Prop The prop that has changed.
-function Interface.handlePropChange(instance, prop, value, shouldWriteValue)
+function Interface.handlePropChange(instance, prop, value, writeValue)
   local patch = Patches.activePatch
   if not (patch and patch.encoders) then
     return
@@ -85,7 +98,7 @@ function Interface.handlePropChange(instance, prop, value, shouldWriteValue)
   for index, encoder in pairs(encodersPage) do
     if encoder[1] == instance.__id and encoder[2] == prop.name then
       Interface._displayPropValue(index, prop.name, prop:getDisplayValue(value))
-      if shouldWriteValue then
+      if writeValue then
         Encoders.write(index, prop:encodeValue(value))
       end
       break

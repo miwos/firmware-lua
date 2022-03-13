@@ -9,6 +9,9 @@ Patches.activePatch = nil
 ---@param name string
 ---@return Patch
 function Patches.load(name)
+  if Patches.activePatch then
+    Patches.activePatch:destroy()
+  end
   local data = loadfile('lua/patches/' .. name .. '.lua')
   ---@type Patch
   local patch = Patch(data)

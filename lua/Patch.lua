@@ -43,7 +43,7 @@ function Patch:_createMissingInstances()
         for name, value in pairs(serialized.props) do
           local prop = instance.__props[name]
           if prop then
-            prop:__setValue(instance, value)
+            prop:__setValue(instance, value, true, true)
           else
             Log.warn(
               string.format(
@@ -63,8 +63,17 @@ end
 function Patch:_makeConnections()
   for _, connection in pairs(self.connections) do
     local fromId, output, toId, input = unpack(connection)
-    assert(self.instances[fromId], 'Instance@' .. fromId .. " doesn't exist.")
-    self.instances[fromId]:__connect(output, toId, input)
+    local fromInstance = self.instances[fromId]
+    if fromInstance then
+      fromInstance:__connect(output, toId, input)
+    else
+      Log.error(
+        string.format(
+          "Couldn't make connection: Instance@%s doesn't exist.",
+          fromId
+        )
+      )
+    end
   end
 end
 
@@ -203,8 +212,8 @@ function Patch:updateModule(type, NewModule)
 end
 
 function Patch:destroy()
-  for _, module in pairs(self.instances) do
-    module:__destroy()
+  for _, instance in pairs(self.instances) do
+    instance:__destroy()
   end
 end
 

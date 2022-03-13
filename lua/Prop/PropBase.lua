@@ -11,16 +11,23 @@ local PropBase = class()
 
 ---@param instance Module
 ---@param value number
----@param shouldWriteValue boolean
-function PropBase:__setValue(instance, value, shouldWriteValue)
-  shouldWriteValue = shouldWriteValue == nil and true or shouldWriteValue
+---@param writeValue boolean default = true
+---@param initial boolean default = false
+function PropBase:__setValue(instance, value, writeValue, initial)
+  writeValue = writeValue == nil and true or writeValue
 
-  instance:__emit('prop:beforeChange', self.name, value)
+  if not initial then
+    instance:__emit('prop:beforeChange', self.name, value)
+  end
+
   instance.props.__values[self.name] = value
-  instance:__emit('prop:change', self.name, value)
 
-  Instances.updateProp(instance.__id, self.name, value)
-  Interface.handlePropChange(instance, self, value, shouldWriteValue)
+  if not initial then
+    instance:__emit('prop:change', self.name, value)
+    Instances.updateProp(instance.__id, self.name, value)
+  end
+
+  Interface.handlePropChange(instance, self, value, writeValue)
 end
 
 return PropBase

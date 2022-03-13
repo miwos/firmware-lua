@@ -11,4 +11,5 @@ require('Modules')
 require('InputOutput')
 require('Miwos')
 
-Patches.load('patch1')
+Interface.selectPart(1)
+Interface.selectPage(1)
