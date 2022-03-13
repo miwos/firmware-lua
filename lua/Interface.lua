@@ -1,3 +1,5 @@
+local utils = require('utils')
+
 Interface = {
   currentPageIndex = 1,
 }
@@ -14,7 +16,7 @@ function Interface._displayPropValue(index, name, value)
   Displays.write(index, value)
   Timer.cancel(propChangedHandlers[index])
   propChangedHandlers[index] = Timer.schedule(function()
-    Displays.write(index, name)
+    Displays.write(index, utils.capitalize(name))
     propChangedHandlers[index] = nil
   end, Timer.now() + propChangedTimeout)
 end
@@ -44,7 +46,7 @@ function Interface._displayEncoder(patch, index, encoder)
   end
 
   Encoders.write(index, prop:encodeValue(instance.props[propName]))
-  Displays.write(index, prop.name)
+  Displays.write(index, utils.capitalize(prop.name))
 end
 
 function Interface.selectPage(index, updateApp)

@@ -89,4 +89,8 @@ function utils.connectionsHas(connections, connection)
   return false
 end
 
+function utils.capitalize(str)
+  return str:sub(1, 1):upper() .. str:sub(2)
+end
+
 return utils
