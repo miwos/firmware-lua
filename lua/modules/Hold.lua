@@ -2,7 +2,6 @@
 local Hold = Modules.create('Hold', { shape = 'Transform' })
 
 function Hold:init()
-  self.notes = {}
   self.lastNoteTime = 0
   self.maxNoteInterval = 100
 end
@@ -13,22 +12,10 @@ Hold:defineInOut({ Input.Midi, Output.Midi })
 Hold:on('input1:noteOn', function(self, note)
   local time = Timer.now()
   if time - self.lastNoteTime > self.maxNoteInterval then
-    self:clear()
+    self:__finishNotes()
   end
-  self:addNote(note)
+  self:output(1, note)
   self.lastNoteTime = time
 end)
-
-function Hold:addNote(note)
-  table.insert(self.notes, note)
-  self:output(1, note)
-end
-
-function Hold:clear()
-  for _, note in pairs(self.notes) do
-    self:output(1, Midi.NoteOff(note.note, 0, note.channel))
-  end
-  self.notes = {}
-end
 
 return Hold
