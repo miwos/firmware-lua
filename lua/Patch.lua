@@ -1,4 +1,5 @@
 local class = require('class')
+local utils = require('utils')
 
 ---@class Patch
 ---@field name string Same as file name, will be set by `Patches.loadPatch()`.
@@ -29,17 +30,17 @@ end
 
 ---Initialize modules.
 function Patch:_createMissingInstances()
-  for id, definition in pairs(self.serialized.instances) do
+  for id, serialized in pairs(self.serialized.instances) do
     if not self.instances[id] then
-      local Module = require('modules.' .. definition.Module)
+      local Module = require('modules.' .. serialized.Module)
       ---@type Module
       local instance = Module()
       instance.__id = id
       instance.__name = instance.__type .. '@' .. instance.__id
       self.instances[id] = instance
 
-      if definition.props then
-        for name, value in pairs(definition.props) do
+      if serialized.props then
+        for name, value in pairs(serialized.props) do
           local prop = instance.__props[name]
           if prop then
             prop:__setValue(instance, value)
@@ -108,6 +109,7 @@ end
 
 ---@param serialized PatchSerialized
 function Patch:update(serialized)
+  local oldConnections = self.connections
   self.serialized = serialized
   self.connections = serialized.connections
   self.encoders = serialized.encoders
@@ -121,7 +123,7 @@ function Patch:update(serialized)
     if serialized.instances[id] then
       keepModules[instance.__type] = true
     else
-      table.insert(removeIds, id)
+      removeIds[#removeIds + 1] = id
     end
   end
 
@@ -138,6 +140,25 @@ function Patch:update(serialized)
 
   -- This will only create new instances that were not already part of patch.
   self:_createMissingInstances()
+
+  -- Make sure that the notes are finished for each removed connection.
+  for _, connection in pairs(oldConnections) do
+    if not utils.connectionsHas(self.connections, connection) then
+      local fromId, fromIndex, toId, toIndex = unpack(connection)
+      local fromInstance = self.instances[fromId]
+      local toInstance = self.instances[toId]
+      if fromInstance and toInstance then
+        for noteId in pairs(fromInstance.__unfinishedNotes[fromIndex]) do
+          local note, channel = Midi.parseNoteId(noteId)
+          fromInstance:__sendOutputToInput(
+            toInstance,
+            toIndex,
+            Midi.NoteOff(note, 0, channel)
+          )
+        end
+      end
+    end
+  end
 
   -- Clear and redo all connections in case something changed.
   self:_clearConnections()
