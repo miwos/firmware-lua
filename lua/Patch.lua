@@ -157,13 +157,16 @@ function Patch:update(serialized)
       local fromInstance = self.instances[fromId]
       local toInstance = self.instances[toId]
       if fromInstance and toInstance then
-        for noteId in pairs(fromInstance.__unfinishedNotes[fromIndex]) do
-          local note, channel = Midi.parseNoteId(noteId)
-          fromInstance:__sendOutputToInput(
-            toInstance,
-            toIndex,
-            Midi.NoteOff(note, 0, channel)
-          )
+        local unfinishedNotes = fromInstance.__unfinishedNotes[fromIndex]
+        if unfinishedNotes then
+          for noteId in pairs(unfinishedNotes[fromIndex]) do
+            local note, channel = Midi.parseNoteId(noteId)
+            fromInstance:__sendOutputToInput(
+              toInstance,
+              toIndex,
+              Midi.NoteOff(note, 0, channel)
+            )
+          end
         end
       end
     end

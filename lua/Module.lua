@@ -99,6 +99,10 @@ function Module:__connect(output, moduleId, moduleInput)
   table.insert(self.__outputs[output], { moduleId, moduleInput })
 end
 
+function Module:message(name, ...)
+  App.sendMessage('/instance/message', self.__id, name, ...)
+end
+
 ---Send data to all inputs connected to the output.
 ---@param index number The output index.
 ---@param message MidiMessage The midi message to send.
