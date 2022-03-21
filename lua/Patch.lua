@@ -159,7 +159,7 @@ function Patch:update(serialized)
       if fromInstance and toInstance then
         local unfinishedNotes = fromInstance.__unfinishedNotes[fromIndex]
         if unfinishedNotes then
-          for noteId in pairs(unfinishedNotes[fromIndex]) do
+          for noteId in pairs(unfinishedNotes) do
             local note, channel = Midi.parseNoteId(noteId)
             fromInstance:__sendOutputToInput(
               toInstance,
