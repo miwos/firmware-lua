@@ -16,9 +16,9 @@ end
 Arp:defineInOut({ Input.Midi, Output.Midi })
 
 Arp:defineProps({
-  speed = Prop.Number({ default = 240, min = 30, max = 1300, step = 1 }),
-  gate = Prop.Number({ default = 0.5, min = 0, max = 1 }),
-  hold = Prop.Number({ default = 0 }),
+  Prop.Number('speed', { default = 240, min = 30, max = 1300, step = 1 }),
+  Prop.Number('gate', { default = 0.5, min = 0, max = 1 }),
+  Prop.Number('hold', { default = 0 }),
 })
 
 ---@param note MidiNoteOn

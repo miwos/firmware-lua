@@ -7,7 +7,8 @@ local PropBase = require('Prop.PropBase')
 ---@field step number|nil
 local PropNumber = class(PropBase)
 
-function PropNumber:constructor(args)
+function PropNumber:constructor(name, args)
+  self.name = name
   args = args or {}
   self.show = args.show == nil and true or args.show
   self.min = args.min or 0
@@ -49,6 +50,8 @@ end
 
 function PropNumber:serialize()
   return {
+    name = self.name,
+    index = self.index,
     show = self.show,
     min = self.min,
     max = self.max,

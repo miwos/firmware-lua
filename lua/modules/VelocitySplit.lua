@@ -7,7 +7,7 @@ end
 VelocitySplit:defineInOut({ Input.Midi, Output.Midi, Output.Midi })
 
 VelocitySplit:defineProps({
-  thresh = Prop.Number({ default = 63, min = 0, max = 127, step = 1 }),
+  Prop.Number('thresh', { default = 63, min = 0, max = 127, step = 1 }),
 })
 
 ---@param message MidiMessage

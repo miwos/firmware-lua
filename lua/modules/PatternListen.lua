@@ -15,9 +15,9 @@ end
 PatternListen:defineInOut({ Input.Midi, Output.Trigger })
 
 PatternListen:defineProps({
-  record = Prop.Switch(),
-  tolerance = Prop.Number({ default = 100, max = 500, step = 1 }),
-  speed = Prop.Number({ max = 1 }),
+  Prop.Switch('record', { default = 100, max = 500, step = 1 }),
+  Prop.Number('tolerance', { default = 100, max = 500, step = 1 }),
+  Prop.Number('speed', { max = 1 }),
 })
 
 ---@param self ModulePatternListen

@@ -28,8 +28,8 @@ function Modules.getInfo(id)
 
   info.props = {}
   if module.__props then
-    for name, prop in pairs(module.__props) do
-      info.props[name] = prop:serialize()
+    for _, prop in pairs(module.__props) do
+      info.props[#info.props + 1] = prop:serialize()
     end
   end
 

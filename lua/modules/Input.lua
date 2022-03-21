@@ -12,8 +12,8 @@ end
 Input:defineInOut({ Output.Midi })
 
 Input:defineProps({
-  device = Prop.Number({ show = false, min = 1, max = 16, step = 1 }),
-  cable = Prop.Number({ show = false, min = 1, max = 16, step = 1 }),
+  Prop.Number('device', { show = false, min = 1, max = 16, step = 1 }),
+  Prop.Number('cable', { show = false, min = 1, max = 16, step = 1 }),
 })
 
 function Input:handleInput(index, message, cable)

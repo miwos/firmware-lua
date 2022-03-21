@@ -10,7 +10,7 @@ end
 Pitcher:defineInOut({ Input.Midi, Output.Midi })
 
 Pitcher:defineProps({
-  pitch = Prop.Number({ default = 0, min = -24, max = 24, step = 1 }),
+  Prop.Number('pitch', { default = 0, min = -24, max = 24, step = 1 }),
 })
 
 function Pitcher:sendNote(note)

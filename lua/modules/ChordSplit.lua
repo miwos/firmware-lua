@@ -13,7 +13,7 @@ end
 ChordSplit:defineInOut({ Input.Midi, Output.Midi, Output.Midi })
 
 ChordSplit:defineProps({
-  thresh = Prop.Number({ default = 3, min = 2, max = 5, step = 1 }),
+  Prop.Number('thresh', { default = 3, min = 2, max = 5, step = 1 }),
 })
 
 ---@param note MidiNoteOn

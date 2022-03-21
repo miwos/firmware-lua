@@ -4,7 +4,8 @@ local PropBase = require('Prop.PropBase')
 ---@class PropSwitch : Prop
 local PropSwitch = class(PropBase)
 
-function PropSwitch:constructor(args)
+function PropSwitch:constructor(name, args)
+  self.name = name
   args = args or {}
   self.show = args.show == nil and true or args.show
   self.states = args.states or 2
@@ -35,6 +36,8 @@ end
 
 function PropSwitch:serialize()
   return {
+    name = self.name,
+    index = self.index,
     show = self.show,
     states = self.states,
     default = self.default,

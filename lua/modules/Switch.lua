@@ -8,7 +8,7 @@ end
 Switch:defineInOut({ Input.Midi, Output.Midi, Output.Midi })
 
 Switch:defineProps({
-  state = Prop.Switch(),
+  Prop.Switch('state'),
 })
 
 ---@param message MidiMessage

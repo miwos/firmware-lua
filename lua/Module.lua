@@ -8,6 +8,7 @@ local utils = require('utils')
 ---@field __events string Will be set in `Modules#create()`
 ---@field __id number Will be set in `Patch:_createMissingInstances()`
 ---@field __name string Will be set in `Patch:_createMissingInstances()`
+---@field __props table<string, Prop>
 ---@field __info { shape: string }
 ---@field __inputsDefinition { signal: number }[]
 ---@field __outputsDefinition { signal: number }[]
@@ -70,12 +71,14 @@ function Module:defineInOut(inputsOutputs)
 end
 
 ---Define the properties that are available on the module.
----@param props table<string, Prop>
+---@param props Prop[]
 function Module:defineProps(props)
-  for name, prop in pairs(props) do
-    prop.name = name
+  local propDictionary = {}
+  for index, prop in ipairs(props) do
+    prop.index = index
+    propDictionary[prop.name] = prop
   end
-  self.__props = props
+  self.__props = propDictionary
 end
 
 ---@param event string

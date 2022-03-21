@@ -6,12 +6,12 @@ function Test:init()
 end
 
 Test:defineProps({
-  param1 = Prop.Number({ default = 0, min = 0, max = 127, step = 1 }),
-  param2 = Prop.Number({ default = 0, min = 0, max = 127, step = 1 }),
-  param3 = Prop.Number({ default = 0, min = 0, max = 127, step = 1 }),
-  param4 = Prop.Number({ default = 0, min = 0, max = 127, step = 1 }),
-  param5 = Prop.Number({ default = 0, min = 0, max = 127, step = 1 }),
-  param6 = Prop.Number({ default = 0, min = 0, max = 127, step = 1 }),
+  Prop.Number('param1', { default = 0, min = 0, max = 127, step = 1 }),
+  Prop.Number('param2', { default = 0, min = 0, max = 127, step = 1 }),
+  Prop.Number('param3', { default = 0, min = 0, max = 127, step = 1 }),
+  Prop.Number('param4', { default = 0, min = 0, max = 127, step = 1 }),
+  Prop.Number('param5', { default = 0, min = 0, max = 127, step = 1 }),
+  Prop.Number('param6', { default = 0, min = 0, max = 127, step = 1 }),
 })
 
 return Test
