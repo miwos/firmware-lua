@@ -7,10 +7,13 @@ local PropBase = require('Prop.PropBase')
 ---@field step number|nil
 local PropNumber = class(PropBase)
 
+PropNumber.serializeFields = { 'min', 'max', 'setp', 'default', 'unit' }
+PropNumber.type = 'number'
+
 function PropNumber:constructor(name, args)
-  self.name = name
+  PropNumber.super.constructor(self, name, args)
   args = args or {}
-  self.show = args.show == nil and true or args.show
+  self.after = args.unit
   self.min = args.min or 0
   self.max = args.max or 127
   self.step = args.step
@@ -43,21 +46,9 @@ end
 ---Return a string representation of the value.
 ---@param value number
 ---@return string
-function PropNumber:getDisplayValue(value)
+function PropNumber:formatValue(value)
   return utils.isInt(self.step) and string.format('%i', value)
     or string.format('%.2f', value)
-end
-
-function PropNumber:serialize()
-  return {
-    name = self.name,
-    index = self.index,
-    show = self.show,
-    min = self.min,
-    max = self.max,
-    step = self.step,
-    default = self.default,
-  }
 end
 
 return PropNumber

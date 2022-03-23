@@ -3,6 +3,7 @@ local PropBase = require('Prop.PropBase')
 
 ---@class PropSwitch : Prop
 local PropSwitch = class(PropBase)
+PropSwitch.type = 'switch'
 
 function PropSwitch:constructor(name, args)
   self.name = name
