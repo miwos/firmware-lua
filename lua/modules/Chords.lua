@@ -6,8 +6,9 @@ Chords.__hmrKeep = { 'props', 'chords' }
 -- todo: fix
 
 function Chords:init()
-  self.listening = false
+  ---@type MidiNoteOn[]
   self.listeningNotes = {}
+  self.listening = false
   self.maxNoteInterval = 100
   self.lastNoteTime = 0
 
@@ -59,10 +60,55 @@ function Chords:listen(note)
   self.lastNoteTime = time
 
   Timer.cancel(self.listenTimerHandler)
-  Timer.schedule(function()
+  self.listenTimerHandler = Timer.schedule(function()
     self.listening = false
     self.chords[self.props.chord] = self.listeningNotes
-    self.listenTimerHandler = nil
+
+    local noteValues = {}
+    for _, n in pairs(self.listeningNotes) do
+      noteValues[#noteValues + 1] = n.note
+    end
+    local matched, root, quality, add = Midi.analyzeChord(unpack(noteValues))
+    if matched then
+      local noteLetterDict = {
+        'C',
+        'C#',
+        'D',
+        'D#',
+        'E',
+        'F',
+        'F#',
+        'G',
+        'G#',
+        'A',
+        'A#',
+        'B',
+      }
+
+      local qualitiesDict = {
+        '', -- major (omitted)
+        'm', -- minor
+        'dim', -- diminished
+        'aug', -- augmented
+        '6', -- minor seventh
+        'm7b5', -- half diminished seventh
+        'dim7', -- diminished seventh
+        'mM7', --minor major seventh
+        '7', -- seventh
+        'maj7', -- major seventh
+      }
+
+      add = add == 8 and 'b9' or add
+
+      Log.info(
+        string.format(
+          '%s%s%s',
+          noteLetterDict[root],
+          qualitiesDict[quality],
+          add ~= 0 and 'add' .. add or ''
+        )
+      )
+    end
   end, Timer.now() + self.maxNoteInterval)
 end
 
