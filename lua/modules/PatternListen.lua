@@ -1,3 +1,4 @@
+local utils = require('utils')
 ---@class ModulePatternListen : Module
 local PatternListen = Modules.create(
   'PatternListen',
@@ -9,6 +10,10 @@ PatternListen.__hmrKeep = { 'props', 'pattern' }
 function PatternListen:init()
   self.pattern = { 0, 1000, 2000 }
   self.notes = {}
+
+  self.toleranceMin = 0 -- ms
+  self.toleranceMax = 500 -- ms
+
   self.recording = false
 end
 
@@ -16,8 +21,8 @@ PatternListen:defineInOut({ Input.Midi, Output.Trigger })
 
 PatternListen:defineProps({
   Prop.Switch('record', { default = 100, max = 500, step = 1 }),
-  Prop.Number('tolerance', { default = 100, max = 500, step = 1 }),
-  Prop.Number('speed', { max = 1 }),
+  Prop.Percent('precise', { default = 0.8, before = '+ ' }),
+  Prop.Percent('speed', { default = 0.2, before = '+ ' }),
 })
 
 ---@param self ModulePatternListen
@@ -76,8 +81,22 @@ function PatternListen:checkForPattern()
   local notesOffset = self.notes[1]
   local notesDuration = self.notes[#self.notes] - notesOffset
   local patternDuration = self.pattern[#self.pattern]
+
+  local durationDeviation = self.props.speed * patternDuration
+  local minDuration = patternDuration - durationDeviation
+  local maxDuration = patternDuration + durationDeviation
+  if notesDuration < minDuration or notesDuration > maxDuration then
+    return
+  end
+
   local stretch = patternDuration / notesDuration
-  local tolerance = self.props.tolerance
+  local tolerance = utils.mapValue(
+    self.props.precise,
+    0,
+    1,
+    self.toleranceMax,
+    self.toleranceMin
+  )
 
   for i = 1, #self.pattern do
     local min = self.pattern[i] - tolerance
