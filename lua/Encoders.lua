@@ -1,3 +1,4 @@
+local utils = require('utils')
 -- The global Encoder object might have already been created by c++.
 Encoders = _G.Encoders or {}
 
@@ -8,11 +9,9 @@ function Encoders.handleChange(index, rawValue)
   local patch = Patches.activePatch
   if patch then
     local instanceId, name = patch:getMappedProp(index)
-    local instance = patch.instances[instanceId]
-
-    if instance then
-      local prop = instance.__props[name]
-      prop:__setValue(instance, prop:decodeValue(rawValue), false)
+    local prop = Instances.getProp(instanceId, name)
+    if prop then
+      prop:__setRawValue(rawValue)
     end
   end
 end
@@ -22,9 +21,15 @@ function Encoders.handleClick(index)
   if patch then
     local instanceId, name = patch:getMappedProp(index)
     local instance = patch.instances[instanceId]
-
-    if instance then
-      instance:__emit('prop:click', name)
+    if not instance then
+      return
     end
+
+    local prop = instance.__props[name]
+    if prop then
+      utils.callIfExists(prop.handleClick, { prop, name })
+    end
+
+    instance:__emit('prop:click', name)
   end
 end

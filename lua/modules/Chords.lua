@@ -22,12 +22,12 @@ end
 Chords:defineInOut({ Input.Midi, Input.Trigger, Output.Midi })
 
 Chords:defineProps({
-  Prop.Number('count', { max = 16, default = 3, step = 1 }),
-  Prop.Switch('chord', { states = 3 }),
+  Prop.Switch('chords', { length = 3 }),
+  Prop.Number('num', { min = 1, max = 3, default = 3, step = 1 }),
 })
 
 Chords:on('prop:change', function(self, name, value)
-  if name == 'count' then
+  if name == 'num' then
     self.__props.chord.states = value
   end
 end)

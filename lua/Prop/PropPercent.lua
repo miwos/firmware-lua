@@ -9,18 +9,16 @@ PropPercent.type = 'percent'
 
 function PropPercent:constructor(name, args)
   args = args or {}
-  args.step = args.step == nil and 0.01 or args.step
-  args.max = args.max == nil and 1 or args.max
+  args.step = utils.default(args.step, 0.01)
+  args.max = utils.default(args.max, 1)
   args.unit = '%'
   PropPercent.super.constructor(self, name, args)
 end
 
----Return a string representation of the value.
----@param value number
 ---@return string
-function PropPercent:formatValue(value)
-  return utils.isInt(self.step * 100) and string.format('%i', value * 100)
-    or string.format('%.2f', value * 100)
+function PropPercent:formatValue()
+  return utils.isInt(self.step * 100) and string.format('%i', self.value * 100)
+    or string.format('%.2f', self.value * 100)
 end
 
 return PropPercent

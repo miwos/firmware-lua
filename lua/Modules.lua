@@ -23,13 +23,14 @@ function Modules.getInfo(id)
   local module = require('modules.' .. id)
 
   local info = module.__info or {}
-  info.inputs = module.__inputsDefinition
-  info.outputs = module.__outputsDefinition
+  info.inputs = module.__inputDefinitions
+  info.outputs = module.__outputDefinitions
 
   info.props = {}
-  if module.__props then
-    for _, prop in pairs(module.__props) do
-      info.props[#info.props + 1] = prop:serialize()
+  local propDefinitions = module.__propDefinitions
+  if propDefinitions then
+    for _, definition in pairs(propDefinitions) do
+      info.props[#info.props + 1] = definition:serialize()
     end
   end
 

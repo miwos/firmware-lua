@@ -17,10 +17,10 @@ function PropNumber:constructor(name, args)
   self.min = args.min or 0
   self.max = args.max or 127
   self.step = args.step
-  self.default = args.default == nil and self.min or args.default
+  self.default = utils.default(args.default, self.min)
 end
 
----Convert a raw encoder value to a scaled prop value.
+---Convert a raw encoder value to a prop value.
 ---@param rawValue number
 ---@return number
 function PropNumber:decodeValue(rawValue)
@@ -36,19 +36,23 @@ function PropNumber:decodeValue(rawValue)
     or scaledValue
 end
 
----Convert a scaled prop value to a raw encoder value.
----@param value number
+---Return the encoded value.
 ---@return number
-function PropNumber:encodeValue(value)
-  return utils.mapValue(value, self.min, self.max, Encoders.min, Encoders.max)
+function PropNumber:encodeValue()
+  return utils.mapValue(
+    self.value,
+    self.min,
+    self.max,
+    Encoders.min,
+    Encoders.max
+  )
 end
 
 ---Return a string representation of the value.
----@param value number
 ---@return string
-function PropNumber:formatValue(value)
-  return utils.isInt(self.step) and string.format('%i', value)
-    or string.format('%.2f', value)
+function PropNumber:formatValue()
+  return utils.isInt(self.step) and string.format('%i', self.value)
+    or string.format('%.2f', self.value)
 end
 
 return PropNumber

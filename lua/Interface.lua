@@ -99,9 +99,9 @@ function Interface.handlePropChange(instance, prop, value, writeValue)
   local encodersPage = patch.encoders[Interface.currentPageIndex]
   for index, encoder in pairs(encodersPage) do
     if encoder[1] == instance.__id and encoder[2] == prop.name then
-      Interface._displayPropValue(index, prop.name, prop:getDisplayValue(value))
+      Interface._displayPropValue(index, prop.name, prop:displayValue())
       if writeValue then
-        Encoders.write(index, prop:encodeValue(value))
+        Encoders.write(index, prop:encodeValue())
       end
       break
     end

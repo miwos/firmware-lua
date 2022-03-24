@@ -1,4 +1,5 @@
 local class = require('class')
+local utils = require('utils')
 
 ---@class Prop : Class
 ---@field name string Will be set in `Module#defineProps()`
@@ -7,9 +8,12 @@ local class = require('class')
 ---@field after string
 ---@field encodeValue function
 ---@field decodeValue function
----@field getDisplayValue function
+---@field displayValue function
 ---@field serialize function
+---@field handleClick function
 ---@field default number
+---@field instance Module
+---@field value number
 local PropBase = class()
 
 PropBase.serializeFields = {}
@@ -17,41 +21,53 @@ PropBase.serializeFields = {}
 function PropBase:constructor(name, args)
   self.name = name
   args = args or {}
-  self.show = args.show == nil and true or args.show
+  self.show = utils.default(args.show, true)
   self.before = args.before
   self.after = args.after
 end
 
----@param instance Module
+function PropBase:create(moduleInstance)
+  local prop = {
+    instance = moduleInstance,
+    value = utils.default(self.default, 0),
+  }
+  return setmetatable(prop, { __index = self })
+end
+
 ---@param value number
 ---@param writeValue boolean default = true
 ---@param initial boolean default = false
-function PropBase:__setValue(instance, value, writeValue, initial)
+function PropBase:__setValue(value, writeValue, initial)
   writeValue = writeValue == nil and true or writeValue
 
   if not initial then
-    instance:__emit('prop:beforeChange', self.name, value)
+    self.instance:__emit('prop:beforeChange', self.name, value)
   end
 
-  instance.props.__values[self.name] = value
+  self.value = value
 
   if not initial then
-    instance:__emit('prop:change', self.name, value)
-    Instances.updateProp(instance.__id, self.name, value)
+    self.instance:__emit('prop:change', self.name, value)
+    Instances.updateProp(self.instance.__id, self.name, value)
   end
 
-  Interface.handlePropChange(instance, self, value, writeValue)
+  Interface.handlePropChange(self.instance, self, value, writeValue)
 end
 
-function PropBase:formatValue(value)
-  return value
+---@param rawValue number
+function PropBase:__setRawValue(rawValue)
+  self:__setValue(self:decodeValue(rawValue), false)
 end
 
-function PropBase:getDisplayValue(value)
+function PropBase:formatValue()
+  return self.value
+end
+
+function PropBase:displayValue()
   return string.format(
     '%s%s%s',
     self.before or '',
-    self:formatValue(value),
+    self:formatValue(),
     self.after or ''
   )
 end

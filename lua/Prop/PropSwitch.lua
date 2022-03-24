@@ -6,11 +6,10 @@ local PropSwitch = class(PropBase)
 PropSwitch.type = 'switch'
 
 function PropSwitch:constructor(name, args)
-  self.name = name
+  PropSwitch.super.constructor(self, name, args)
   args = args or {}
-  self.show = args.show == nil and true or args.show
-  self.states = args.states or 2
-  self.value = args.default or 1
+  self.states = utils.default(args.state, 2)
+  self.value = utils.default(args.default, 1)
 end
 
 ---Convert a raw encoder value to a scaled prop value.
@@ -23,16 +22,15 @@ function PropSwitch:decodeValue(rawValue)
 end
 
 ---Convert a scaled prop value to a raw encoder value.
----@param value number
 ---@return number
-function PropSwitch:encodeValue(value)
-  return utils.mapValue(value, 1, self.states, Encoders.min, Encoders.max)
+function PropSwitch:encodeValue()
+  return utils.mapValue(self.value, 1, self.states, Encoders.min, Encoders.max)
 end
 
 ---Return a string representation of the value.
 ---@return string
-function PropSwitch:getDisplayValue(value)
-  return tostring(value)
+function PropSwitch:displayValue()
+  return tostring(self.value)
 end
 
 function PropSwitch:serialize()

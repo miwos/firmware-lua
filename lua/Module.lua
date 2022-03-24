@@ -10,8 +10,8 @@ local utils = require('utils')
 ---@field __name string Will be set in `Patch:_createMissingInstances()`
 ---@field __props table<string, Prop>
 ---@field __info { shape: string }
----@field __inputsDefinition { signal: number }[]
----@field __outputsDefinition { signal: number }[]
+---@field __inputDefinitions { signal: number }[]
+---@field __outputDefinitions { signal: number }[]
 local Module = class()
 
 Module.__hmrKeep = { 'props' }
@@ -19,11 +19,25 @@ Module.__hmrKeep = { 'props' }
 function Module:constructor()
   self.__unfinishedNotes = {}
   self.__outputs = {}
-  self.props = self:__createPropsProxy()
-  for name, prop in pairs(self.__props or {}) do
-    self.props.__values[name] = prop.default or 0
+
+  self.__props = {}
+  for _, definition in ipairs(self.__propDefinitions) do
+    self.__props[definition.name] = definition:create(self)
   end
+  self.props = self:__createPropsProxy()
+
   utils.callIfExists(self.init, { self })
+end
+
+function Module:__getProp(name)
+  local prop = self.__props[name]
+  if prop then
+    return prop
+  else
+    Log.warn(
+      string.format("Prop '%s' doesn't exist on module %s.", name, self.__type)
+    )
+  end
 end
 
 function Module:__createPropsProxy()
@@ -31,26 +45,18 @@ function Module:__createPropsProxy()
   local instance = self
 
   function mt:__newindex(key, value)
-    self.__values[key] = value
-    local prop = instance.__props[key]
-    if not prop then
-      Log.warn(
-        string.format(
-          "Prop '%s' doesn't exist on module %s.",
-          key,
-          instance.__type
-        )
-      )
-    else
-      instance.__props[key]:__setValue(self, value, true)
+    local prop = instance:__getProp(key)
+    if prop then
+      prop:__setValue(value, true)
     end
   end
 
   function mt:__index(key)
-    return self.__values[key]
+    local prop = instance:__getProp(key)
+    return prop and prop.value or nil
   end
 
-  return setmetatable({ __values = {} }, mt)
+  return setmetatable({}, mt)
 end
 
 ---Define the inputs and outputs that are available on the module.
@@ -66,19 +72,17 @@ function Module:defineInOut(inputsOutputs)
     category[#category + 1] = { signal = inputOutput.signal }
   end
 
-  self.__inputsDefinition = inputs
-  self.__outputsDefinition = outputs
+  self.__inputDefinitions = inputs
+  self.__outputDefinitions = outputs
 end
 
 ---Define the properties that are available on the module.
----@param props Prop[]
-function Module:defineProps(props)
-  local propDictionary = {}
-  for index, prop in ipairs(props) do
+---@param definitions Prop[]
+function Module:defineProps(definitions)
+  for index, prop in ipairs(definitions) do
     prop.index = index
-    propDictionary[prop.name] = prop
   end
-  self.__props = propDictionary
+  self.__propDefinitions = definitions
 end
 
 ---@param event string

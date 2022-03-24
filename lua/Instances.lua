@@ -19,3 +19,17 @@ Instances.updateOutputs = utils.throttle(function()
 
   Instances._updateOutputs(table.concat(activeOutputs, ','))
 end, 50)
+
+function Instances.getProp(instanceId, name)
+  local patch = Patches.activePatch
+  if not patch then
+    return
+  end
+
+  local instance = patch.instances[instanceId]
+  if not instance then
+    return
+  end
+
+  return instance.__props[name]
+end
