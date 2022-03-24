@@ -1,5 +1,8 @@
 ---@class ModuleChordSplit : Module
-local ChordSplit = Modules.create('ChordSplit', { shape = 'Split' })
+local ChordSplit = Modules.create(
+  'ChordSplit',
+  { shape = 'Split', label = 'Chord\\nSplit' }
+)
 
 function ChordSplit:init()
   self.usedOutputs = {}
@@ -13,7 +16,7 @@ end
 ChordSplit:defineInOut({ Input.Midi, Output.Midi, Output.Midi })
 
 ChordSplit:defineProps({
-  Prop.Number('thresh', { default = 3, min = 2, max = 5, step = 1 }),
+  Prop.Number('notes', { default = 3, min = 2, max = 5, step = 1 }),
 })
 
 ---@param note MidiNoteOn
@@ -57,7 +60,7 @@ function ChordSplit:playNote(outputIndex, note)
 end
 
 function ChordSplit:split()
-  local outputIndex = (#self.notes < self.props.thresh) and 1 or 2
+  local outputIndex = (#self.notes < self.props.notes) and 1 or 2
 
   for _, note in pairs(self.notes) do
     self:playNote(outputIndex, note)

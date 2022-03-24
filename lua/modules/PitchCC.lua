@@ -1,5 +1,8 @@
 ---@class ModulePitchCC : Module
-local PitchCC = Modules.create('PitchCC', { shape = 'CreateWith' })
+local PitchCC = Modules.create(
+  'PitchCC',
+  { shape = 'CreateWith', label = { 'Note', 'CC' } }
+)
 
 PitchCC:defineInOut({ Input.Midi, Output.Midi })
 

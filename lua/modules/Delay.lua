@@ -1,7 +1,7 @@
 local class = require('class')
 
 ---@class Delay : Module
-local Delay = Modules.create('Delay', { shape = 'Delay' })
+local Delay = Modules.create('Delay', { shape = 'Delay', label = 'Delay' })
 
 ---@class DelayMessage
 ---@field delay Delay
