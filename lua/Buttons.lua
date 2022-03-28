@@ -2,5 +2,5 @@
 Buttons = _G.Buttons or {}
 
 function Buttons.handleClick(index)
-  Interface.handleClick(index)
+  Views.activeView:handleButtonClick(index)
 end

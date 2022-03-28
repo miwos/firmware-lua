@@ -10,7 +10,8 @@ local utils = require('utils')
 ---@field decodeValue function
 ---@field displayValue function
 ---@field serialize function
----@field handleClick function
+---@field handleEncoderClick function
+---@field handleEncoderChange function
 ---@field default number
 ---@field instance Module
 ---@field value number
@@ -21,9 +22,10 @@ PropBase.serializeFields = {}
 function PropBase:constructor(name, args)
   self.name = name
   args = args or {}
-  self.show = utils.default(args.show, true)
   self.before = args.before
   self.after = args.after
+  self.visible = false
+  self.displayIndex = nil
 end
 
 function PropBase:create(moduleInstance)
@@ -51,12 +53,24 @@ function PropBase:__setValue(value, writeValue, initial)
     Instances.updateProp(self.instance.__id, self.name, value)
   end
 
-  Interface.handlePropChange(self.instance, self, value, writeValue)
+  if writeValue and self.visible then
+    Encoders.write(self.displayIndex, self:encodeValue())
+  end
 end
 
----@param rawValue number
-function PropBase:__setRawValue(rawValue)
+function PropBase:handleEncoderChange(rawValue)
+  if self.ignoreEncoderChangeOnce then
+    self.ignoreEncoderChangeOnce = false
+    return
+  end
+
   self:__setValue(self:decodeValue(rawValue), false)
+  Displays.write(self.displayIndex, self:formatValue())
+
+  Timer.cancel(self.timerId)
+  self.timerId = Timer.schedule(function()
+    Displays.write(self.displayIndex, utils.capitalize(self.name))
+  end, Timer.now() + 1000)
 end
 
 function PropBase:formatValue()
@@ -70,6 +84,23 @@ function PropBase:displayValue()
     self:formatValue(),
     self.after or ''
   )
+end
+
+function PropBase:show(displayIndex)
+  self.visible = true
+  self.displayIndex = displayIndex
+
+  Displays.write(displayIndex, utils.capitalize(self.name))
+
+  -- Writing to the encoder will trigger an encoder change, but in this case
+  -- the prop's value hasn't changed, so we can ignore it.
+  self.ignoreEncoderChangeOnce = true
+  Encoders.write(displayIndex, self:encodeValue())
+end
+
+function PropBase:hide()
+  self.visible = false
+  Timer.cancel(self.timerId)
 end
 
 function PropBase:serialize()

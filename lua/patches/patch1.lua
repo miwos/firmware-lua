@@ -6,5 +6,9 @@ return {
   connections = {
     { 1, 1, 2, 1 },
   },
-  encoders = { {}, {}, {} },
+  encoders = {
+    {},
+    {},
+    {},
+  },
 }

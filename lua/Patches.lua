@@ -20,6 +20,12 @@ function Patches.load(name)
   return patch
 end
 
+function Patches.selectPart(index)
+  -- TODO: dont hardcode patch name
+  Patches.load('patch' .. index)
+  Views.Patch:update('part', index)
+end
+
 function Patches.handlePropChange(instanceId, name, value)
   if Patches.activePatch then
     local instance = Patches.activePatch.instances[instanceId]

@@ -86,39 +86,13 @@ end
 ---Activate the patch and initialize the encoders.
 function Patch:activate()
   Patches.activePatch = self
-  Interface.handlePatchChange(self)
-end
-
-function Patch:getProp(instanceId, propName)
-  local instance = self.instances[instanceId]
-  return instance and instance.__props[propName]
-end
-
----@param encoderIndex number
----@return number, string -- InstanceId and prop name.
-function Patch:getMappedProp(encoderIndex)
-  if not self.encoders then
-    return
-  end
-
-  local encodersPage = self.encoders[Interface.currentPageIndex]
-  local encoder = encodersPage[encoderIndex]
-  if not encoder then
-    Log.warn('Encoder #' .. encoderIndex .. " isn't mapped to anything.")
-    return
-  end
-
-  local instanceId, propName = unpack(encoder)
-  return instanceId, propName
-end
-
-function Patch:handlePropClick(instanceId, propName)
-  self.instances[instanceId].__emit('prop:change', propName)
+  Views.Patch:update('patch', self)
 end
 
 ---@param serialized PatchSerialized
 function Patch:update(serialized)
   local oldConnections = self.connections
+  local oldEncoders = self.encoders
   self.serialized = serialized
   self.connections = serialized.connections
   self.encoders = serialized.encoders
@@ -175,8 +149,7 @@ function Patch:update(serialized)
   -- Clear and redo all connections in case something changed.
   self:_clearConnections()
   self:_makeConnections()
-
-  Interface.handlePatchChange(self)
+  Views.Patch:showPage()
 end
 
 ---Update a single module instance.

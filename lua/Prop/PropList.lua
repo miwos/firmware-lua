@@ -16,4 +16,8 @@ function PropList:constructor(name, args)
   self.default = utils.default(args.default, 0)
 end
 
+function PropList:handleEncoderChange(value)
+  Log.info(value)
+end
+
 return PropList
