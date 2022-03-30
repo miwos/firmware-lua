@@ -34,7 +34,7 @@ function PatchView:showPage()
       prop:show(index)
       self.visibleProps[#self.visibleProps + 1] = prop
     else
-      Displays.clear(index)
+      Displays.clear(index, true)
     end
   end
 end

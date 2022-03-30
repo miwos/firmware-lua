@@ -55,4 +55,51 @@ function PropNumber:formatValue()
     or string.format('%.2f', self.value)
 end
 
+function PropNumber:show(displayIndex)
+  self.visible = true
+  self.displayIndex = displayIndex
+
+  self:showName()
+
+  -- Writing to the encoder will trigger an encoder change, but in this case
+  -- the prop's value hasn't changed, so we can ignore it.
+  self.ignoreEncoderChangeOnce = true
+  Encoders.write(displayIndex, self:encodeValue())
+end
+
+function PropNumber:showName()
+  Displays.clear(self.displayIndex)
+  self:showProgressBar()
+  Displays.write(self.displayIndex, utils.capitalize(self.name), 1, true)
+end
+
+function PropNumber:showProgressBar()
+  utils.drawProgressBar(
+    self.displayIndex,
+    utils.mapValue(self.value, self.min, self.max, 0, 1)
+  )
+end
+
+function PropNumber:handleEncoderChange(rawValue)
+  if self.ignoreEncoderChangeOnce then
+    self.ignoreEncoderChangeOnce = false
+    return
+  end
+
+  self:__setValue(self:decodeValue(rawValue), false)
+
+  Displays.clear(self.displayIndex)
+  self:showProgressBar()
+  local prefix = self.before and (' ' .. self.after) or ''
+  local suffix = self.after and (' ' .. self.after) or ''
+  Displays.write(
+    self.displayIndex,
+    prefix .. self:formatValue() .. suffix,
+    1,
+    true
+  )
+
+  self:showNameTimeout(1000)
+end
+
 return PropNumber

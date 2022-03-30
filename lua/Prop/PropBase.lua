@@ -9,6 +9,7 @@ local utils = require('utils')
 ---@field encodeValue function
 ---@field decodeValue function
 ---@field displayValue function
+---@field showName function
 ---@field serialize function
 ---@field handleEncoderClick function
 ---@field handleEncoderChange function
@@ -26,6 +27,7 @@ function PropBase:constructor(name, args)
   self.after = args.after
   self.visible = false
   self.displayIndex = nil
+  self.list = args.list
 end
 
 function PropBase:create(moduleInstance)
@@ -58,19 +60,15 @@ function PropBase:__setValue(value, writeValue, initial)
   end
 end
 
-function PropBase:handleEncoderChange(rawValue)
-  if self.ignoreEncoderChangeOnce then
-    self.ignoreEncoderChangeOnce = false
-    return
-  end
+function PropBase:handleEncoderClick()
+  self.instance:__emit('prop:click', self.name)
+end
 
-  self:__setValue(self:decodeValue(rawValue), false)
-  Displays.write(self.displayIndex, self:formatValue())
-
-  Timer.cancel(self.timerId)
-  self.timerId = Timer.schedule(function()
-    Displays.write(self.displayIndex, utils.capitalize(self.name))
-  end, Timer.now() + 1000)
+function PropBase:showNameTimeout(time)
+  Timer.cancel(self.showNameTimer)
+  self.showNameTimer = Timer.schedule(function()
+    self:showName()
+  end, Timer.now() + time)
 end
 
 function PropBase:formatValue()
@@ -86,27 +84,23 @@ function PropBase:displayValue()
   )
 end
 
-function PropBase:show(displayIndex)
-  self.visible = true
-  self.displayIndex = displayIndex
-
-  Displays.write(displayIndex, utils.capitalize(self.name))
-
-  -- Writing to the encoder will trigger an encoder change, but in this case
-  -- the prop's value hasn't changed, so we can ignore it.
-  self.ignoreEncoderChangeOnce = true
-  Encoders.write(displayIndex, self:encodeValue())
-end
-
 function PropBase:hide()
   self.visible = false
-  Timer.cancel(self.timerId)
+  Timer.cancel(self.showNameTimer)
 end
 
 function PropBase:serialize()
   local serialized = {}
 
-  local defaultFields = { 'name', 'type', 'index', 'show', 'before', 'after' }
+  local defaultFields = {
+    'name',
+    'type',
+    'index',
+    'list',
+    'before',
+    'after',
+    'default',
+  }
   for _, field in ipairs(defaultFields) do
     serialized[field] = self[field]
   end

@@ -11,7 +11,8 @@ function PropPercent:constructor(name, args)
   args = args or {}
   args.step = utils.default(args.step, 0.01)
   args.max = utils.default(args.max, 1)
-  args.unit = '%'
+  -- TODO: use `%` sign when its added to the font.
+  args.unit = ''
   PropPercent.super.constructor(self, name, args)
 end
 

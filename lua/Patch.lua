@@ -131,9 +131,9 @@ function Patch:update(serialized)
       local fromInstance = self.instances[fromId]
       local toInstance = self.instances[toId]
       if fromInstance and toInstance then
-        local unfinishedNotes = fromInstance.__unfinishedNotes[fromIndex]
-        if unfinishedNotes then
-          for noteId in pairs(unfinishedNotes) do
+        local activeNotes = fromInstance.__activeNotes[fromIndex]
+        if activeNotes then
+          for noteId in pairs(activeNotes) do
             local note, channel = Midi.parseNoteId(noteId)
             fromInstance:__sendOutputToInput(
               toInstance,

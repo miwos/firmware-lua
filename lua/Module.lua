@@ -14,10 +14,11 @@ local utils = require('utils')
 ---@field __outputDefinitions { signal: number }[]
 local Module = class()
 
-Module.__hmrKeep = { 'props' }
+Module.__hmrKeep = {}
 
 function Module:constructor()
-  self.__unfinishedNotes = {}
+  self.__activeNotes = {}
+  self.__activeTriggers = {}
   self.__outputs = {}
 
   self.__props = {}
@@ -123,10 +124,14 @@ function Module:output(index, message)
       ---@type MidiNoteOn|MidiNoteOff
       local note = message
       local noteId = Midi.getNoteId(note.note, note.channel)
-      self.__unfinishedNotes[index] = self.__unfinishedNotes[index] or {}
-      self.__unfinishedNotes[index][noteId] = note:is(Midi.NoteOn) and true
-        or nil
+      self.__activeNotes[index] = self.__activeNotes[index] or {}
+      self.__activeNotes[index][noteId] = note:is(Midi.NoteOn) and true or nil
     end
+  elseif signal == Signal.Trigger then
+    -- Keep track of any recently activated triggers. Used in
+    -- `Instances#updateOutputs()`, which will also reset them after they have
+    -- been sent to the app).
+    self.__activeTriggers[index] = true
   end
 
   self:__handleOutput(signal, index, message)
@@ -166,7 +171,7 @@ end
 ---Finish unfinished midi notes to prevent midi panic.
 ---@param output? number
 function Module:__finishNotes(output)
-  for index, noteIds in pairs(self.__unfinishedNotes) do
+  for index, noteIds in pairs(self.__activeNotes) do
     if not output or index == output then
       for noteId in pairs(noteIds) do
         local note, channel = Midi.parseNoteId(noteId)
@@ -181,10 +186,16 @@ end
 ---called for each instance (see `Patch#updateModule()`).
 ---@return table - the state
 function Module:__saveState()
-  local state = {}
+  local state = { __propValues = {} }
+
+  for name, prop in pairs(self.__props) do
+    state.__propValues[name] = prop.value
+  end
+
   for _, property in pairs(self.__hmrKeep) do
     state[property] = self[property]
   end
+
   return state
 end
 
@@ -194,6 +205,13 @@ function Module:__applyState(state)
   for _, property in pairs(self.__hmrKeep) do
     if state[property] ~= nil then
       self[property] = state[property]
+    end
+  end
+
+  for name, value in pairs(state.__propValues) do
+    local prop = self.__props[name]
+    if prop then
+      prop.value = value
     end
   end
 end

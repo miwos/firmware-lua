@@ -5,11 +5,19 @@ Timer = _G.Timer or {}
 Timer.events = {}
 
 function Timer.update(now)
+  local finishedCallbacks = {}
+
   for callback, time in pairs(Timer.events) do
     if time <= now then
-      callback()
+      -- TODO: check if canceling the timer before calling the callback has any
+      -- TODO: consequences (need for interval to work)
       Timer.events[callback] = nil
+      finishedCallbacks[#finishedCallbacks + 1] = callback
     end
+  end
+
+  for _, callback in ipairs(finishedCallbacks) do
+    callback()
   end
 end
 
@@ -20,6 +28,14 @@ end
 function Timer.schedule(callback, time)
   Timer.events[callback] = time
   return callback
+end
+
+function Timer.interval(callback, interval)
+  local function _callback()
+    callback()
+    Timer.schedule(_callback, Timer.now() + interval)
+  end
+  return Timer.schedule(_callback, Timer.now() + interval)
 end
 
 ---Reschedule an event (the same as scheduling an event, as the callback is used

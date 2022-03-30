@@ -52,7 +52,7 @@ Delay:defineInOut({ Input.Midi, Output.Midi })
 
 Delay:defineProps({
   Prop.Number('time', { default = 500, min = 0, max = 1000, step = 1 }),
-  Prop.Number('feed', { min = 0, max = 100, step = 1 }),
+  Prop.Percent('feed'),
 })
 
 ---@param message MidiMessage

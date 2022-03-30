@@ -5,14 +5,24 @@ Instances.updateOutputs = utils.throttle(function()
   local activeOutputs = {}
 
   local patch = Patches.activePatch
-  if patch then
-    for _, instance in pairs(Patches.activePatch.instances) do
-      for index, unfinishedNotes in pairs(instance.__unfinishedNotes) do
-        if utils.getTableLength(unfinishedNotes) > 0 then
-          activeOutputs[#activeOutputs + 1] = instance.__id
-            .. '-'
-            .. (index - 1) -- zero-based index
-        end
+  if not patch then
+    return
+  end
+
+  for _, instance in pairs(patch.instances) do
+    for outputIndex, definition in pairs(instance.__outputDefinitions) do
+      local isActive = false
+      if definition.signal == Signal.Midi then
+        local activeNotes = instance.__activeNotes[outputIndex]
+        isActive = activeNotes and utils.getTableLength(activeNotes) > 0
+      elseif definition.signal == Signal.Trigger then
+        isActive = instance.__activeTriggers[outputIndex]
+      end
+
+      if isActive then
+        activeOutputs[#activeOutputs + 1] = instance.__id
+          .. '-'
+          .. (outputIndex - 1) -- zero-based index
       end
     end
   end

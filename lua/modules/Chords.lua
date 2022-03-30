@@ -1,9 +1,6 @@
+local utils = require('utils')
 ---@class ModuleChords : Module
 local Chords = Modules.create('Chords', { shape = 'Chords' })
-
-Chords.__hmrKeep = { 'props', 'chords' }
-
--- todo: fix
 
 function Chords:init()
   ---@type MidiNoteOn[]
@@ -12,29 +9,58 @@ function Chords:init()
   self.maxNoteInterval = 100
   self.lastNoteTime = 0
 
-  self.chords = {}
   self.index = 1
 
   self.listenTimerHandler = nil
   self.stopNotesTimerHandler = nil
 end
 
+local function notesToString(notes)
+  if not notes or #notes == 0 then
+    return 'empty'
+  end
+
+  local pitches = {}
+  local lowestPitch
+  for _, note in pairs(notes) do
+    local pitch = note.note
+    pitches[#pitches + 1] = pitch
+    if lowestPitch == nil or pitch < lowestPitch then
+      lowestPitch = pitch
+    end
+  end
+
+  local chordName = utils.getChordName(pitches)
+  return chordName
+    or string.format(
+      '%s%s',
+      utils.getNoteName(lowestPitch),
+      (#notes > 1 and ',...' or '')
+    )
+end
+
 Chords:defineInOut({ Input.Midi, Input.Trigger, Output.Midi })
 
 Chords:defineProps({
-  Prop.List('chords', { length = 3 }),
-  Prop.Number('num', { min = 1, max = 3, default = 3, step = 1 }),
+  Prop.List('chords', {
+    length = 3,
+    format = notesToString,
+  }),
+  Prop.Number('length', { min = 1, max = 6, default = 3, step = 1 }),
 })
 
 Chords:on('prop:change', function(self, name, value)
-  if name == 'num' then
-    self.__props.chords.states = value
+  if name == 'length' then
+    self.__props.chords.length = value
   end
 end)
 
 Chords:on('prop:click', function(self, name)
-  if name == 'chord' then
+  if name == 'chords' then
     self.listening = true
+    if self.__props.chords.visible then
+      self.__props.chords:showArm('recording')
+    end
   end
 end)
 
@@ -62,59 +88,25 @@ function Chords:listen(note)
   Timer.cancel(self.listenTimerHandler)
   self.listenTimerHandler = Timer.schedule(function()
     self.listening = false
-    self.chords[self.props.chord] = self.listeningNotes
 
-    local noteValues = {}
-    for _, n in pairs(self.listeningNotes) do
-      noteValues[#noteValues + 1] = n.note
-    end
-    local matched, root, quality, add = Midi.analyzeChord(unpack(noteValues))
-    if matched then
-      local noteLetterDict = {
-        'C',
-        'C#',
-        'D',
-        'D#',
-        'E',
-        'F',
-        'F#',
-        'G',
-        'G#',
-        'A',
-        'A#',
-        'B',
-      }
+    ---@type PropList
+    local chords = self.__props.chords
+    chords:hideArm()
+    chords:setCurrentValue(self.listeningNotes)
 
-      local qualitiesDict = {
-        '', -- major (omitted)
-        'm', -- minor
-        'dim', -- diminished
-        'aug', -- augmented
-        '6', -- minor seventh
-        'm7b5', -- half diminished seventh
-        'dim7', -- diminished seventh
-        'mM7', --minor major seventh
-        '7', -- seventh
-        'maj7', -- major seventh
-      }
-
-      add = add == 8 and 'b9' or add
-
-      Log.info(
-        string.format(
-          '%s%s%s',
-          noteLetterDict[root],
-          qualitiesDict[quality],
-          add ~= 0 and 'add' .. add or ''
-        )
-      )
-    end
+    self:message('chord', chords.selected, notesToString(self.listeningNotes))
   end, Timer.now() + self.maxNoteInterval)
 end
 
 ---@param index number
 function Chords:playChord(index)
-  local chord = self.chords[index]
+  self:__finishNotes()
+
+  ---@type PropList
+  local chords = self.__props.chords
+  chords:showHighlight(index)
+
+  local chord = self.__props.chords.value[index]
   if not chord then
     return
   end
@@ -130,7 +122,7 @@ end
 
 function Chords:playNextChord()
   self:playChord(self.index)
-  self.index = self.index < self.props.count and self.index + 1 or 1
+  self.index = self.index < self.props.length and self.index + 1 or 1
 end
 
 return Chords
