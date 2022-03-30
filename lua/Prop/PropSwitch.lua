@@ -19,8 +19,8 @@ function PropSwitch:decodeValue(rawValue)
   )
 end
 
-function PropSwitch:encodeValue()
-  return utils.mapValue(self.value, 1, self.states, Encoders.min, Encoders.max)
+function PropSwitch:encodeValue(value)
+  return utils.mapValue(value, 1, self.states, Encoders.min, Encoders.max)
 end
 
 function PropSwitch:show(displayIndex)

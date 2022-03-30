@@ -51,16 +51,19 @@ Chords:defineProps({
 
 Chords:on('prop:change', function(self, name, value)
   if name == 'length' then
-    self.__props.chords.length = value
+    ---@type PropList
+    local chords = self.__props.chords
+    chords.length = value
+    chords:update()
   end
 end)
 
 Chords:on('prop:click', function(self, name)
   if name == 'chords' then
     self.listening = true
-    if self.__props.chords.visible then
-      self.__props.chords:showArm('recording')
-    end
+    ---@type PropList
+    local chords = self.__props.chords
+    chords:switchView(chords.Views.Rec)
   end
 end)
 
@@ -91,8 +94,9 @@ function Chords:listen(note)
 
     ---@type PropList
     local chords = self.__props.chords
-    chords:hideArm()
-    chords:setCurrentValue(self.listeningNotes)
+    chords:setListValue(chords.selected, self.listeningNotes)
+    chords:switchView(chords.Views.Value)
+    chords:switchView(chords.Views.Name, 2500)
 
     self:message('chord', chords.selected, notesToString(self.listeningNotes))
   end, Timer.now() + self.maxNoteInterval)
@@ -104,7 +108,8 @@ function Chords:playChord(index)
 
   ---@type PropList
   local chords = self.__props.chords
-  chords:showHighlight(index)
+  chords.highlighted = index
+  chords:update()
 
   local chord = self.__props.chords.value[index]
   if not chord then

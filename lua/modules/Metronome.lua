@@ -10,7 +10,10 @@ end
 Metronome:defineInOut({ Output.Trigger })
 
 Metronome:defineProps({
-  Prop.Number('time', { min = 5, max = 1000, default = 1000, step = 1 }),
+  Prop.Number(
+    'time',
+    { min = 5, max = 1000, default = 1000, step = 1, unit = 'ms' }
+  ),
 })
 
 function Metronome:tick()

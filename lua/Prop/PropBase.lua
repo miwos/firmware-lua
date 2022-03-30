@@ -19,6 +19,7 @@ local utils = require('utils')
 local PropBase = class()
 
 PropBase.serializeFields = {}
+PropBase.Views = { Name = 1, Value = 2 }
 
 function PropBase:constructor(name, args)
   self.name = name
@@ -28,6 +29,20 @@ function PropBase:constructor(name, args)
   self.visible = false
   self.displayIndex = nil
   self.list = args.list
+end
+
+function PropBase:update()
+  if self.visible then
+    self:render()
+  end
+end
+
+function PropBase:show()
+  self:switchView(self.Views.Name)
+  -- Writing to the encoder will trigger an encoder change, but in this case
+  -- the prop's value hasn't changed, so we can ignore it.
+  self.ignoreEncoderChangeOnce = true
+  Encoders.write(self.encoder, self:encodeValue(self.value))
 end
 
 function PropBase:create(moduleInstance)
@@ -41,7 +56,7 @@ end
 ---@param value number
 ---@param writeValue boolean default = true
 ---@param initial boolean default = false
-function PropBase:__setValue(value, writeValue, initial)
+function PropBase:setValue(value, writeValue, initial)
   writeValue = writeValue == nil and true or writeValue
 
   if not initial then
@@ -56,12 +71,36 @@ function PropBase:__setValue(value, writeValue, initial)
   end
 
   if writeValue and self.visible then
-    Encoders.write(self.displayIndex, self:encodeValue())
+    Encoders.write(self.displayIndex, self:encodeValue(self.value))
   end
 end
 
 function PropBase:handleEncoderClick()
   self.instance:__emit('prop:click', self.name)
+end
+
+function PropBase:handleEncoderChange(rawValue)
+  if self.ignoreEncoderChangeOnce then
+    self.ignoreEncoderChangeOnce = false
+    return
+  end
+
+  self:setValue(self:decodeValue(rawValue), false)
+  self:switchView(self.Views.Value)
+  self:switchView(self.Views.Name, 1000)
+end
+
+function PropBase:switchView(view, delay)
+  if not delay then
+    self.view = view
+    self:update()
+  else
+    Timer.cancel(self.switchViewTimer)
+    self.switchViewTimer = Timer.schedule(function()
+      self.view = view
+      self:update()
+    end, Timer.now() + delay)
+  end
 end
 
 function PropBase:showNameTimeout(time)
@@ -71,15 +110,15 @@ function PropBase:showNameTimeout(time)
   end, Timer.now() + time)
 end
 
-function PropBase:formatValue()
-  return self.value
+function PropBase:formatValue(value)
+  return tostring(value)
 end
 
 function PropBase:displayValue()
   return string.format(
     '%s%s%s',
     self.before or '',
-    self:formatValue(),
+    self:formatValue(self.value),
     self.after or ''
   )
 end

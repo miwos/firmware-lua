@@ -24,14 +24,20 @@ function PatchView:showPage()
   end
 
   for _, prop in ipairs(self.visibleProps) do
-    prop:hide()
+    utils.callIfExists(prop.hide, { prop })
+    prop.encoder = nil
+    prop.display = nil
+    prop.visible = false
   end
 
   self.visibleProps = {}
   for index = 1, 3 do
     local prop = self:getProp(index)
     if prop then
-      prop:show(index)
+      prop.encoder = index
+      prop.display = index
+      prop.visible = true
+      prop:show()
       self.visibleProps[#self.visibleProps + 1] = prop
     else
       Displays.clear(index, true)

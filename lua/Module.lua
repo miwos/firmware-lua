@@ -48,7 +48,7 @@ function Module:__createPropsProxy()
   function mt:__newindex(key, value)
     local prop = instance:__getProp(key)
     if prop then
-      prop:__setValue(value, true)
+      prop:setValue(value, true)
     end
   end
 

@@ -20,9 +20,10 @@ function PropNumber:constructor(name, args)
   self.default = utils.default(args.default, self.min)
 end
 
----Convert a raw encoder value to a prop value.
----@param rawValue number
----@return number
+function PropNumber:encodeValue(value)
+  return utils.mapValue(value, self.min, self.max, Encoders.min, Encoders.max)
+end
+
 function PropNumber:decodeValue(rawValue)
   local scaledValue = utils.mapValue(
     rawValue,
@@ -36,70 +37,33 @@ function PropNumber:decodeValue(rawValue)
     or scaledValue
 end
 
----Return the encoded value.
----@return number
-function PropNumber:encodeValue()
-  return utils.mapValue(
-    self.value,
-    self.min,
-    self.max,
-    Encoders.min,
-    Encoders.max
-  )
+function PropNumber:formatValue(value)
+  return utils.isInt(self.step) and string.format('%i', value)
+    or string.format('%.2f', value)
 end
 
----Return a string representation of the value.
----@return string
-function PropNumber:formatValue()
-  return utils.isInt(self.step) and string.format('%i', self.value)
-    or string.format('%.2f', self.value)
-end
+function PropNumber:render()
+  Displays.clear(self.display)
 
-function PropNumber:show(displayIndex)
-  self.visible = true
-  self.displayIndex = displayIndex
-
-  self:showName()
-
-  -- Writing to the encoder will trigger an encoder change, but in this case
-  -- the prop's value hasn't changed, so we can ignore it.
-  self.ignoreEncoderChangeOnce = true
-  Encoders.write(displayIndex, self:encodeValue())
-end
-
-function PropNumber:showName()
-  Displays.clear(self.displayIndex)
-  self:showProgressBar()
-  Displays.write(self.displayIndex, utils.capitalize(self.name), 1, true)
-end
-
-function PropNumber:showProgressBar()
-  utils.drawProgressBar(
-    self.displayIndex,
-    utils.mapValue(self.value, self.min, self.max, 0, 1)
-  )
-end
-
-function PropNumber:handleEncoderChange(rawValue)
-  if self.ignoreEncoderChangeOnce then
-    self.ignoreEncoderChangeOnce = false
-    return
+  local text = ''
+  if self.view == self.Views.Name then
+    -- Name
+    text = utils.capitalize(self.name)
+  else
+    -- Value
+    local prefix = self.before and (' ' .. self.after) or ''
+    local suffix = self.after and (' ' .. self.after) or ''
+    text = prefix .. self:formatValue(self.value) .. suffix
   end
 
-  self:__setValue(self:decodeValue(rawValue), false)
-
-  Displays.clear(self.displayIndex)
-  self:showProgressBar()
-  local prefix = self.before and (' ' .. self.after) or ''
-  local suffix = self.after and (' ' .. self.after) or ''
-  Displays.write(
-    self.displayIndex,
-    prefix .. self:formatValue() .. suffix,
-    1,
-    true
+  -- Render progress bar
+  utils.renderProgressBar(
+    self.display,
+    utils.mapValue(self.value, self.min, self.max, 0, 1)
   )
 
-  self:showNameTimeout(1000)
+  -- Render text and update display
+  Displays.write(self.display, text, Displays.Colors.White, true)
 end
 
 return PropNumber

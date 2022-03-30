@@ -17,9 +17,9 @@ function PropPercent:constructor(name, args)
 end
 
 ---@return string
-function PropPercent:formatValue()
-  return utils.isInt(self.step * 100) and string.format('%i', self.value * 100)
-    or string.format('%.2f', self.value * 100)
+function PropPercent:formatValue(value)
+  return utils.isInt(self.step * 100) and string.format('%i', value * 100)
+    or string.format('%.2f', value * 100)
 end
 
 return PropPercent

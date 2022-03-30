@@ -43,7 +43,7 @@ function Patch:_createMissingInstances()
         for name, value in pairs(serialized.props) do
           local prop = instance.__props[name]
           if prop then
-            prop:__setValue(value, true, true)
+            prop:setValue(value, true, true)
           else
             Log.warn(
               string.format(

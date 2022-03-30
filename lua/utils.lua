@@ -147,7 +147,7 @@ function utils.capitalize(str)
   return str:sub(1, 1):upper() .. str:sub(2)
 end
 
-function utils.drawProgressBar(displayIndex, value)
+function utils.renderProgressBar(displayIndex, value)
   local width = Displays.width
   local height = 8
   local radius = height / 2
