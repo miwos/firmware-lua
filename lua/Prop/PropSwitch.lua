@@ -23,10 +23,20 @@ function PropSwitch:encodeValue(value)
   return utils.mapValue(value, 1, self.states, Encoders.min, Encoders.max)
 end
 
-function PropSwitch:show(displayIndex)
-  self.displayIndex = displayIndex
-  Displays.clear(self.displayIndex)
-  Displays.write(displayIndex, utils.capitalize(self.name), 1, true)
+function PropSwitch:render()
+  Displays.clear(self.display)
+
+  local text = ''
+  if self.view == self.Views.Name then
+    -- Name
+    text = utils.capitalize(self.name)
+  else
+    -- Value
+    text = (self.value == 2) and 'On' or 'Off'
+  end
+
+  -- Render text and update display
+  Displays.write(self.display, text, Displays.Colors.White, true)
 end
 
 return PropSwitch

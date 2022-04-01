@@ -14,7 +14,11 @@ function utils.callIfExists(fn, args)
 end
 
 function utils.default(value, default)
-  return value == nil and default or value
+  if value ~= nil then
+    return value
+  else
+    return default
+  end
 end
 
 function utils.mapValue(value, inMin, inMax, outMin, outMax)
@@ -147,30 +151,60 @@ function utils.capitalize(str)
   return str:sub(1, 1):upper() .. str:sub(2)
 end
 
-function utils.renderProgressBar(displayIndex, value)
+function utils.renderScaleOLD(display, value, steps)
   local width = Displays.width
   local height = 8
+  local x = 0
+  local y = Displays.height - height
+  local center = y + (height / 2)
+  local color = Displays.Colors.White
+
+  Displays.drawRoundedRect(display, x, y - 1, width, height + 1, 4, 1)
+
+  -- Draw the center line.
+  -- Displays.drawLine(display, x, center - 1, x + width, center - 1, color)
+
+  if steps ~= nil then
+    local step = (width - 9) / (steps - 1)
+    for i = 0, steps - 1 do
+      local isFirst = i == 0
+      local isLast = i == steps - 1
+
+      -- Visually adjust the first and last step markers so they don't look
+      -- squeezed into the rounded corners.
+      local margin = (isFirst or isLast) and 2 or 1
+      local translate = isFirst and 1 or isLast and -1 or 0
+      local stepX = i * step + 4 + translate
+
+      Displays.drawLine(
+        display,
+        stepX,
+        y + margin,
+        stepX,
+        Displays.height - 1 - margin,
+        color
+      )
+    end
+  end
+
+  local posX = x + value * (width - 9) + 4
+  Displays.drawCircle(display, posX, center - 1, 4, 1, true)
+end
+
+function utils.renderScale(display, value, steps)
+  local width = Displays.width
+  local height = 7
   local radius = height / 2
   local cropWidth = math.ceil(width * (1 - value))
   local x = 0
   local y = Displays.height - height
 
   -- First draw the complete filled bar.
-  Displays.drawRoundedRect(
-    displayIndex,
-    x,
-    y,
-    width,
-    height,
-    radius,
-    1,
-    true,
-    false
-  )
+  Displays.drawRoundedRect(display, x, y, width, height, radius, 1, true, false)
 
   -- Then crop it.
   Displays.drawRect(
-    displayIndex,
+    display,
     x + width - cropWidth,
     y,
     cropWidth,
@@ -182,7 +216,7 @@ function utils.renderProgressBar(displayIndex, value)
 
   -- Finally add the outline
   Displays.drawRoundedRect(
-    displayIndex,
+    display,
     x,
     y,
     width,
@@ -192,6 +226,79 @@ function utils.renderProgressBar(displayIndex, value)
     false,
     false
   )
+
+  if steps ~= nil then
+    local step = width / steps
+    for i = 1, steps - 1 do
+      local stepX = i * step
+
+      local color = stepX < (width * value) and 0 or 1
+
+      Displays.drawLine(
+        display,
+        stepX,
+        y + 1,
+        stepX,
+        Displays.height - 1,
+        color
+      )
+    end
+  end
+end
+
+function utils.renderProgressBar(display, value, steps)
+  local width = Displays.width
+  local height = 7
+  local radius = height / 2
+  local cropWidth = math.ceil(width * (1 - value))
+  local x = 0
+  local y = Displays.height - height
+
+  -- First draw the complete filled bar.
+  Displays.drawRoundedRect(display, x, y, width, height, radius, 1, true, false)
+
+  -- Then crop it.
+  Displays.drawRect(
+    display,
+    x + width - cropWidth,
+    y,
+    cropWidth,
+    height,
+    0,
+    true,
+    false
+  )
+
+  -- Finally add the outline
+  Displays.drawRoundedRect(
+    display,
+    x,
+    y,
+    width,
+    height,
+    radius,
+    1,
+    false,
+    false
+  )
+
+  if steps ~= nil then
+    local step = width / steps
+    for i = 1, steps - 1 do
+      local stepX = i * step
+
+      local color = stepX < (width * value) and 0 or 1
+
+      Displays.drawLine(
+        display,
+        stepX,
+        y + 1,
+        stepX,
+        Displays.height - 1,
+        color
+      )
+    end
+  end
 end
 
 return utils

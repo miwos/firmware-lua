@@ -20,7 +20,7 @@ end
 PatternListen:defineInOut({ Input.Midi, Output.Trigger })
 
 PatternListen:defineProps({
-  Prop.Switch('record', { default = 100, max = 500, step = 1 }),
+  Prop.Button('record', { toggle = true }),
   Prop.Percent('precise', { default = 0.8, before = '+ ' }),
   Prop.Percent('speed', { default = 0.2, before = '+ ' }),
 })
@@ -28,7 +28,7 @@ PatternListen:defineProps({
 ---@param self ModulePatternListen
 PatternListen:on('prop:click', function(self, name)
   if name == 'record' then
-    self:toggleRecording()
+    self:toggleRecording(self.props.record)
   end
 end)
 
@@ -56,8 +56,12 @@ PatternListen:on('input1:noteOn', function(self, note)
   end
 end)
 
-function PatternListen:toggleRecording()
-  if self.recording then
+function PatternListen:toggleRecording(state)
+  if state then
+    self.recording = true
+    self.pattern = {}
+    self:message('record', true, Timer.now())
+  else
     self.recording = false
     local offset = self.pattern[1]
     for i = 1, #self.pattern do
@@ -65,10 +69,6 @@ function PatternListen:toggleRecording()
     end
     self:message('record', false)
     self:message('pattern', unpack(self.pattern))
-  else
-    self.recording = true
-    self.pattern = {}
-    self:message('record', true, Timer.now())
   end
 end
 

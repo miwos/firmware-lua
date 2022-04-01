@@ -5,7 +5,7 @@ local utils = require('utils')
 local PropList = class(PropBase)
 PropList.serializeFields = {}
 PropList.type = 'list'
-PropList.Views = { Name = 1, Value = 2, Rec = 3 }
+PropList.Views = { Name = 1, Value = 2, Edit = 3 }
 
 function PropList:constructor(name, args)
   PropList.super.constructor(self, name, args)
@@ -33,8 +33,8 @@ function PropList:formatValue(value)
 end
 
 function PropList:handleEncoderChange(value)
-  if self.ignoreEncoderChangeOnce then
-    self.ignoreEncoderChangeOnce = false
+  if self.__ignoreEncoderChangeOnce then
+    self.__ignoreEncoderChangeOnce = false
     return
   end
 
@@ -42,20 +42,21 @@ function PropList:handleEncoderChange(value)
     utils.mapValue(value, Encoders.min, Encoders.max, 1, self.length)
   )
 
-  self:switchView(PropList.Views.Value)
-  self:switchView(PropList.Views.Name, 5000)
+  if self.view ~= self.Views.Edit then
+    self:switchView(self.Views.Value)
+    self:switchView(self.Views.Name, 5000)
+  end
 end
 
 function PropList:handleEncoderClick()
   self.instance:__emit('prop:click', self.name)
-  Timer.cancel(self.showNameTimer)
 end
 
 function PropList:show()
   self:switchView(self.Views.Name)
   -- Writing to the encoder will trigger an encoder change, but in this case
   -- the prop's value hasn't changed, so we can ignore it.
-  self.ignoreEncoderChangeOnce = true
+  self.__ignoreEncoderChangeOnce = true
   Encoders.write(
     self.encoder,
     utils.mapValue(self.selected, 1, self.length, Encoders.min, Encoders.max)
@@ -75,18 +76,22 @@ function PropList:render()
   elseif self.view == PropList.Views.Value then
     -- Currently selected value
     text = self:formatValue(self.value[self.selected])
-  elseif self.view == PropList.Views.Rec then
-    -- Rec
+  elseif self.view == PropList.Views.Edit then
+    -- Edit
     text = 'Rec...'
   end
 
   -- Render navigation
   for i = 1, self.length do
-    local radius = 4
-    local x = (radius * 2 + 4) * (i - 1) + radius
-    local y = Displays.height - 1 - radius
-    local fill = i == navigationIndex
-    Displays.drawCircle(self.display, x, y, radius, 1, fill, false)
+    local empty = self.value[i] == nil
+    local active = i == navigationIndex
+    local width = 8
+    local half = width / 2
+    local radius = (active or not empty) and half or 1
+    local x = (width + half) * (i - 1) + half
+    local y = Displays.height - 1 - half
+
+    Displays.drawCircle(self.display, x, y, radius, 1, active or empty)
   end
 
   -- Render text and update display

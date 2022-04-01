@@ -13,10 +13,12 @@ PropNumber.type = 'number'
 function PropNumber:constructor(name, args)
   PropNumber.super.constructor(self, name, args)
   args = args or {}
-  self.after = args.unit
+  self.before = args.before
+  self.unit = args.unit
   self.min = args.min or 0
   self.max = args.max or 127
   self.step = args.step
+  self.scale = args.scale
   self.default = utils.default(args.default, self.min)
 end
 
@@ -51,15 +53,19 @@ function PropNumber:render()
     text = utils.capitalize(self.name)
   else
     -- Value
-    local prefix = self.before and (' ' .. self.after) or ''
-    local suffix = self.after and (' ' .. self.after) or ''
-    text = prefix .. self:formatValue(self.value) .. suffix
+    text = (self.before or '')
+      .. self:formatValue(self.value)
+      .. (self.unit or '')
   end
 
-  -- Render progress bar
+  -- Render progress scale or bar
+  local min = self.min > 0 and self.min - 1 or self.min
+  local normalizedValue = utils.mapValue(self.value, min, self.max, 0, 1)
+
   utils.renderProgressBar(
     self.display,
-    utils.mapValue(self.value, self.min, self.max, 0, 1)
+    normalizedValue,
+    self.scale and self.max
   )
 
   -- Render text and update display

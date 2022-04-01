@@ -46,7 +46,7 @@ Chords:defineProps({
     length = 3,
     format = notesToString,
   }),
-  Prop.Number('length', { min = 1, max = 6, default = 3, step = 1 }),
+  Prop.Number('length', { min = 1, max = 6, scale = 6, default = 3, step = 1 }),
 })
 
 Chords:on('prop:change', function(self, name, value)
@@ -63,7 +63,7 @@ Chords:on('prop:click', function(self, name)
     self.listening = true
     ---@type PropList
     local chords = self.__props.chords
-    chords:switchView(chords.Views.Rec)
+    chords:switchView(chords.Views.Edit)
   end
 end)
 

@@ -2,49 +2,28 @@ local class = require('class')
 local utils = require('utils')
 
 ---@class Prop : Class
----@field name string Will be set in `Module#defineProps()`
----@field index number Will be set in `Module#defineProps()`
----@field before string
----@field after string
----@field encodeValue function
----@field decodeValue function
----@field displayValue function
----@field showName function
----@field serialize function
----@field handleEncoderClick function
----@field handleEncoderChange function
----@field default number
----@field instance Module
----@field value number
+---@field value any
+---@field default any
+---@field instance Module The owner of the prop.
+---@field display number The display the prop is rendered on, if visible.
+---@field encoder number The encoder the prop is using, if visible.
+---@field render function Abstract
+---@field encodeValue function Abstract
+---@field decodeValue function Abstract
 local PropBase = class()
-
 PropBase.serializeFields = {}
 PropBase.Views = { Name = 1, Value = 2 }
 
 function PropBase:constructor(name, args)
   self.name = name
   args = args or {}
-  self.before = args.before
-  self.after = args.after
-  self.visible = false
-  self.displayIndex = nil
   self.list = args.list
+  self.visible = false
 end
 
-function PropBase:update()
-  if self.visible then
-    self:render()
-  end
-end
-
-function PropBase:show()
-  self:switchView(self.Views.Name)
-  -- Writing to the encoder will trigger an encoder change, but in this case
-  -- the prop's value hasn't changed, so we can ignore it.
-  self.ignoreEncoderChangeOnce = true
-  Encoders.write(self.encoder, self:encodeValue(self.value))
-end
-
+---Create a new clone.
+---@param moduleInstance Module
+---@return Prop
 function PropBase:create(moduleInstance)
   local prop = {
     instance = moduleInstance,
@@ -53,25 +32,27 @@ function PropBase:create(moduleInstance)
   return setmetatable(prop, { __index = self })
 end
 
----@param value number
----@param writeValue boolean default = true
----@param initial boolean default = false
-function PropBase:setValue(value, writeValue, initial)
+---Set the value and optionally emit the corresponding events on the instance
+---and/or write the value to the encoder.
+---@param writeValue boolean Wether to write the value to the encoder or not. (default = true)
+---@param emitEvents boolean Wether to emit events on the instance or not. (default = true)
+function PropBase:setValue(value, writeValue, emitEvents)
   writeValue = writeValue == nil and true or writeValue
+  emitEvents = emitEvents == nil and true or emitEvents
 
-  if not initial then
+  if emitEvents then
     self.instance:__emit('prop:beforeChange', self.name, value)
   end
 
   self.value = value
 
-  if not initial then
+  if emitEvents then
     self.instance:__emit('prop:change', self.name, value)
     Instances.updateProp(self.instance.__id, self.name, value)
   end
 
   if writeValue and self.visible then
-    Encoders.write(self.displayIndex, self:encodeValue(self.value))
+    Encoders.write(self.encoder, self:encodeValue(self.value))
   end
 end
 
@@ -80,8 +61,8 @@ function PropBase:handleEncoderClick()
 end
 
 function PropBase:handleEncoderChange(rawValue)
-  if self.ignoreEncoderChangeOnce then
-    self.ignoreEncoderChangeOnce = false
+  if self.__ignoreEncoderChangeOnce then
+    self.__ignoreEncoderChangeOnce = false
     return
   end
 
@@ -90,56 +71,47 @@ function PropBase:handleEncoderChange(rawValue)
   self:switchView(self.Views.Name, 1000)
 end
 
+---Start showing the prop an a display.
+function PropBase:show()
+  self:switchView(self.Views.Name)
+  -- Writing to the encoder will trigger an encoder change, but in this case
+  -- the prop's value hasn't changed, so we can ignore it.
+  self.__ignoreEncoderChangeOnce = true
+  Encoders.write(self.encoder, self:encodeValue(self.value))
+end
+
+---Switch to another view (either immediately or after a delay) and re-render.
+---@param view number
+---@param delay number
 function PropBase:switchView(view, delay)
+  Timer.cancel(self.__switchViewTimer)
   if not delay then
     self.view = view
     self:update()
   else
-    Timer.cancel(self.switchViewTimer)
-    self.switchViewTimer = Timer.schedule(function()
+    self.__switchViewTimer = Timer.schedule(function()
       self.view = view
       self:update()
     end, Timer.now() + delay)
   end
 end
 
-function PropBase:showNameTimeout(time)
-  Timer.cancel(self.showNameTimer)
-  self.showNameTimer = Timer.schedule(function()
-    self:showName()
-  end, Timer.now() + time)
+---Re-renderthe prop if visible.
+function PropBase:update()
+  if self.visible then
+    self:render()
+  end
 end
 
-function PropBase:formatValue(value)
-  return tostring(value)
-end
-
-function PropBase:displayValue()
-  return string.format(
-    '%s%s%s',
-    self.before or '',
-    self:formatValue(self.value),
-    self.after or ''
-  )
-end
-
+---Cleanup rendering.
 function PropBase:hide()
-  self.visible = false
-  Timer.cancel(self.showNameTimer)
+  Timer.cancel(self.__switchViewTimer)
 end
 
 function PropBase:serialize()
   local serialized = {}
 
-  local defaultFields = {
-    'name',
-    'type',
-    'index',
-    'list',
-    'before',
-    'after',
-    'default',
-  }
+  local defaultFields = { 'name', 'type', 'index', 'list', 'default' }
   for _, field in ipairs(defaultFields) do
     serialized[field] = self[field]
   end
