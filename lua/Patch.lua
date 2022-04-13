@@ -40,8 +40,10 @@ function Patch:_createMissingInstances()
       self.instances[id] = instance
 
       if serialized.props then
-        for name, value in pairs(serialized.props) do
+        for name, data in pairs(serialized.props) do
           local prop = instance.__props[name]
+          -- We allow both `prop = value` and `prop = { value = x, ... }`.
+          local value = type(data) == 'table' and data.value or data
           if prop then
             prop:setValue(prop:deserializeValue(value), true, true)
           else

@@ -51,7 +51,10 @@ end
 Delay:defineInOut({ Input.Midi, Output.Midi })
 
 Delay:defineProps({
-  Prop.Number('time', { default = 500, min = 0, max = 1000, step = 1 }),
+  Prop.Number(
+    'time',
+    { default = 500, min = 0, max = 1000, step = 1, unit = 'ms' }
+  ),
   Prop.Percent('feed'),
 })
 
