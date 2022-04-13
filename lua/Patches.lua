@@ -35,7 +35,7 @@ function Patches.handlePropChange(instanceId, name, value)
         string.format("Prop '%s' doesn't exist on %s", name, instance.__name)
       )
     else
-      prop:setValue(value)
+      prop:setValue(prop:deserializeValue(value))
     end
   end
 end

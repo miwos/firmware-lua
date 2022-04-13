@@ -6,6 +6,7 @@ local PropButton = class(PropBase)
 PropButton.type = 'button'
 
 function PropButton:constructor(name, args)
+  args = args or {}
   PropButton.super.constructor(self, name, args)
   self.toggle = args.toggle
   self.default = utils.default(args.default, false)
@@ -29,6 +30,7 @@ function PropButton:handleEncoderClick()
     self:update()
   end
   self.instance:__emit('prop:click', self.name)
+  self.instance:__emit('prop:change', self.name, self.value)
 end
 
 -- Do nothing.

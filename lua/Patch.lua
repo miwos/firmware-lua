@@ -43,7 +43,7 @@ function Patch:_createMissingInstances()
         for name, value in pairs(serialized.props) do
           local prop = instance.__props[name]
           if prop then
-            prop:setValue(value, true, true)
+            prop:setValue(prop:deserializeValue(value), true, true)
           else
             Log.warn(
               string.format(
@@ -86,7 +86,7 @@ end
 ---Activate the patch and initialize the encoders.
 function Patch:activate()
   Patches.activePatch = self
-  Views.Patch:update('patch', self)
+  Views.Patch:update('patch')
 end
 
 ---@param serialized PatchSerialized

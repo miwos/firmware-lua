@@ -16,9 +16,12 @@ end
 Arp:defineInOut({ Input.Midi, Output.Midi })
 
 Arp:defineProps({
-  Prop.Number('speed', { default = 240, min = 30, max = 1300, step = 1 }),
-  Prop.Number('gate', { default = 0.5, min = 0, max = 1 }),
-  Prop.Number('hold', { default = 0 }),
+  Prop.Number(
+    'interval',
+    { default = 120, min = 1, max = 500, step = 1, unit = 'ms' }
+  ),
+  Prop.Percent('gate'),
+  Prop.Button('hold', { toggle = true }),
 })
 
 ---@param note MidiNoteOn
@@ -39,13 +42,14 @@ Arp:on('input1:noteOn', function(self, note)
 end)
 
 Arp:on('input1:noteOff', function(self)
-  self:clear()
-  -- if not self.props.hold then self:clear() end
+  if not self.props.hold then
+    self:clear()
+  end
 end)
 
 Arp:on('prop:change', function(self, name, value)
-  if name == 'interval' then
-    self.interval = utils.bpmToMillis(value)
+  if name == 'hold' and value == false then
+    self:clear()
   end
 end)
 
@@ -56,7 +60,7 @@ function Arp:update()
 
   local gateDuration = math.max(
     self.minGateDuration,
-    self.interval * self.props.gate
+    self.interval * (self.props.gate / 100)
   )
 
   local note = self.notes[self.noteIndex]
@@ -71,7 +75,7 @@ function Arp:update()
   local _self = self
   self.timerId = Timer.schedule(function()
     Arp.update(_self)
-  end, Timer.now() + self.interval)
+  end, Timer.now() + self.props.interval)
 
   -- We increase the index by one, even though this may make it larger than the
   -- total number of notes, because new notes may have been added until the next

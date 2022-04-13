@@ -15,12 +15,13 @@ end
 
 function PropSwitch:decodeValue(rawValue)
   return math.floor(
-    utils.mapValue(rawValue, Encoders.min, Encoders.max, 1, self.states) + 0.5
+    utils.mapValue(rawValue, self.encoderMin, self.encoderMax, 1, self.states)
+      + 0.5
   )
 end
 
 function PropSwitch:encodeValue(value)
-  return utils.mapValue(value, 1, self.states, Encoders.min, Encoders.max)
+  return utils.mapValue(value, 1, self.states, self.encoderMin, self.encoderMax)
 end
 
 function PropSwitch:render()

@@ -38,5 +38,5 @@ function Modules.getInfo(id)
     _G._LOADED[path] = nil
   end
 
-  return utils.tableToJson(info)
+  return utils.serializeTable(info)
 end

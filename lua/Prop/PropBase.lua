@@ -17,6 +17,8 @@ PropBase.Views = { Name = 1, Value = 2 }
 function PropBase:constructor(name, args)
   self.name = name
   args = args or {}
+  self.encoderMin = 0
+  self.encoderMax = 50
   self.list = args.list
   self.visible = false
 end
@@ -48,12 +50,24 @@ function PropBase:setValue(value, writeValue, emitEvents)
 
   if emitEvents then
     self.instance:__emit('prop:change', self.name, value)
-    Instances.updateProp(self.instance.__id, self.name, value)
+    Instances.updateProp(
+      self.instance.__id,
+      self.name,
+      self:serializeValue(value)
+    )
   end
 
   if writeValue and self.visible then
     Encoders.write(self.encoder, self:encodeValue(self.value))
   end
+end
+
+function PropBase:serializeValue(value)
+  return value
+end
+
+function PropBase:deserializeValue(value)
+  return value
 end
 
 function PropBase:handleEncoderClick()
@@ -71,12 +85,17 @@ function PropBase:handleEncoderChange(rawValue)
   self:switchView(self.Views.Name, 1000)
 end
 
+function PropBase:updateEncoderRange()
+  Encoders.setRange(self.encoder, self.encoderMin, self.encoderMax)
+end
+
 ---Start showing the prop an a display.
 function PropBase:show()
   self:switchView(self.Views.Name)
   -- Writing to the encoder will trigger an encoder change, but in this case
   -- the prop's value hasn't changed, so we can ignore it.
   self.__ignoreEncoderChangeOnce = true
+  self:updateEncoderRange()
   Encoders.write(self.encoder, self:encodeValue(self.value))
 end
 

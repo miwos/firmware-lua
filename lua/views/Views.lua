@@ -2,6 +2,13 @@ local PatchView = require('views.Patch')
 local SettingsView = require('views.Settings')
 local utils = require('utils')
 
+---@class View
+---@field active boolean
+---@field deactivate function
+---@field handleEncoderChange function
+---@field handleEncoderClick function
+---@field handleButtonClick function
+
 Views = {
   Patch = PatchView,
   -- Settings = SettingsView,
@@ -23,5 +30,12 @@ function Views.activate(name)
     view.active = true
     Views.activeView = view
     view:activate()
+  end
+end
+
+function Views.update(viewName, ...)
+  Views[viewName]:update(...)
+  if Views.activeView then
+    Views.activeView:update(...)
   end
 end

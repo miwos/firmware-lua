@@ -10,26 +10,57 @@ PropList.Views = { Name = 1, Value = 2, Edit = 3 }
 function PropList:constructor(name, args)
   PropList.super.constructor(self, name, args)
   args = args or {}
-  self.length = args.length
   self.selected = utils.default(args.selected, 1)
   self.default = utils.default(args.default, {})
+  self.sensitivity = utils.default(args.sensitivity, 0.7)
   self.customFormat = args.format
-
   self.highlighted = nil
   self.view = PropList.Views.Name
+  self:setLength(args.length)
 end
 
-function PropList:setValue(value)
-  assert(type(value) == 'table', 'value must be a table')
-  self.value = value
+function PropList:setValue(value, _, emitEvents)
+  if type(value) ~= 'table' then
+    Log.warn('Value must be a table.')
+    value = {}
+  end
+  -- For a `PropList` the value is not changed by the encoder directly, so we
+  -- never write the value to the encoder.
+  PropList.super.setValue(self, value, false, emitEvents)
 end
 
 function PropList:setListValue(index, value)
   self.value[index] = value
+  self:setValue(self.value)
+end
+
+function PropList:setLength(value)
+  self.length = value
+  self.encoderMax = math.floor(
+    value * utils.mapValue(self.sensitivity, 0, 1, 8, 1)
+  )
+  if self.visible then
+    self:updateEncoderRange()
+  end
+  self:update()
 end
 
 function PropList:formatValue(value)
   return self.customFormat and self.customFormat(value) or tostring(value)
+end
+
+function PropList:serializeValue(value)
+  -- To create a correct json representation of the value we have to make sure
+  -- that there aren't any holes in it.
+  local array = {}
+  for i = 1, self.length do
+    array[i] = value[i] or false
+  end
+  return utils.serializeTable(array)
+end
+
+function PropList:deserializeValue(value)
+  return loadstring('return ' .. value)()
 end
 
 function PropList:handleEncoderChange(value)
@@ -39,12 +70,12 @@ function PropList:handleEncoderChange(value)
   end
 
   self.selected = math.floor(
-    utils.mapValue(value, Encoders.min, Encoders.max, 1, self.length)
+    utils.mapValue(value, self.encoderMin, self.encoderMax, 1, self.length)
   )
 
   if self.view ~= self.Views.Edit then
     self:switchView(self.Views.Value)
-    self:switchView(self.Views.Name, 5000)
+    self:switchView(self.Views.Name, 2000)
   end
 end
 
@@ -57,9 +88,16 @@ function PropList:show()
   -- Writing to the encoder will trigger an encoder change, but in this case
   -- the prop's value hasn't changed, so we can ignore it.
   self.__ignoreEncoderChangeOnce = true
+  Encoders.setRange(self.encoder, self.encoderMin, self.encoderMax)
   Encoders.write(
     self.encoder,
-    utils.mapValue(self.selected, 1, self.length, Encoders.min, Encoders.max)
+    utils.mapValue(
+      self.selected,
+      1,
+      self.length,
+      self.encoderMin,
+      self.encoderMax
+    )
   )
 end
 
@@ -83,7 +121,7 @@ function PropList:render()
 
   -- Render navigation
   for i = 1, self.length do
-    local empty = self.value[i] == nil
+    local empty = not self.value[i]
     local active = i == navigationIndex
     local width = 8
     local half = width / 2

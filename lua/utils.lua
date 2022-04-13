@@ -1,7 +1,7 @@
 local loaUtils = require('loa_firmware.utils')
 
 local utils = {
-  tableToJson = loaUtils.tableToJson,
+  serializeTable = loaUtils.serializeTable,
 }
 
 ---Call a function if it exists.

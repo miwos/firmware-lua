@@ -21,8 +21,8 @@ PatternListen:defineInOut({ Input.Midi, Output.Trigger })
 
 PatternListen:defineProps({
   Prop.Button('record', { toggle = true }),
-  Prop.Percent('precise', { default = 0.8, before = '+ ' }),
-  Prop.Percent('speed', { default = 0.2, before = '+ ' }),
+  Prop.Percent('precise', { default = 0.8 }),
+  Prop.Percent('speed', { default = 0.2, before = '~ ' }),
 })
 
 ---@param self ModulePatternListen

@@ -10,6 +10,11 @@ local PropNumber = class(PropBase)
 PropNumber.serializeFields = { 'min', 'max', 'setp', 'default', 'unit' }
 PropNumber.type = 'number'
 
+local function ease(x)
+  return 1.383493
+    + (0.00001915815 - 1.383493) / (1 + (x / 0.3963062) ^ 1.035488)
+end
+
 function PropNumber:constructor(name, args)
   PropNumber.super.constructor(self, name, args)
   args = args or {}
@@ -20,17 +25,24 @@ function PropNumber:constructor(name, args)
   self.step = args.step
   self.scale = args.scale
   self.default = utils.default(args.default, self.min)
+  self.encoderMax = math.floor(ease((self.max - self.min) / 127) * 127)
 end
 
 function PropNumber:encodeValue(value)
-  return utils.mapValue(value, self.min, self.max, Encoders.min, Encoders.max)
+  return utils.mapValue(
+    value,
+    self.min,
+    self.max,
+    self.encoderMin,
+    self.encoderMax
+  )
 end
 
 function PropNumber:decodeValue(rawValue)
   local scaledValue = utils.mapValue(
     rawValue,
-    Encoders.min,
-    Encoders.max,
+    self.encoderMin,
+    self.encoderMax,
     self.min,
     self.max
   )

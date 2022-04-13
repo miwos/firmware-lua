@@ -20,21 +20,18 @@ local function notesToString(notes)
     return 'empty'
   end
 
-  local pitches = {}
-  local lowestPitch
+  local lowestNote
   for _, note in pairs(notes) do
-    local pitch = note.note
-    pitches[#pitches + 1] = pitch
-    if lowestPitch == nil or pitch < lowestPitch then
-      lowestPitch = pitch
+    if lowestNote == nil or note < lowestNote then
+      lowestNote = note
     end
   end
 
-  local chordName = utils.getChordName(pitches)
+  local chordName = utils.getChordName(notes)
   return chordName
     or string.format(
       '%s%s',
-      utils.getNoteName(lowestPitch),
+      utils.getNoteName(lowestNote),
       (#notes > 1 and ',...' or '')
     )
 end
@@ -42,19 +39,18 @@ end
 Chords:defineInOut({ Input.Midi, Input.Trigger, Output.Midi })
 
 Chords:defineProps({
-  Prop.List('chords', {
-    length = 3,
-    format = notesToString,
-  }),
-  Prop.Number('length', { min = 1, max = 6, scale = 6, default = 3, step = 1 }),
+  Prop.List('chords', { length = 3, format = notesToString }),
+  Prop.Number(
+    'length',
+    { min = 1, max = 4, scale = true, default = 4, step = 1 }
+  ),
 })
 
 Chords:on('prop:change', function(self, name, value)
   if name == 'length' then
     ---@type PropList
     local chords = self.__props.chords
-    chords.length = value
-    chords:update()
+    chords:setLength(value)
   end
 end)
 
@@ -85,7 +81,7 @@ function Chords:listen(note)
     self.listeningNotes = {}
   end
 
-  table.insert(self.listeningNotes, note)
+  table.insert(self.listeningNotes, note.note)
   self.lastNoteTime = time
 
   Timer.cancel(self.listenTimerHandler)
@@ -104,25 +100,29 @@ end
 
 ---@param index number
 function Chords:playChord(index)
+  -- First, send a message, as this will take a while.
+  self:message('play', index)
+
+  -- Make sure to clean up any previous chord.
   self:__finishNotes()
 
+  -- Play the chord for 100ms.
+  local chord = self.__props.chords.value[index]
+  if chord then
+    for _, note in pairs(chord) do
+      self:output(1, Midi.NoteOn(note, 127, 1))
+    end
+
+    Timer.schedule(function()
+      self:__finishNotes()
+    end, Timer.now() + 100)
+  end
+
+  -- Finally, update the prop view.
   ---@type PropList
   local chords = self.__props.chords
   chords.highlighted = index
   chords:update()
-
-  local chord = self.__props.chords.value[index]
-  if not chord then
-    return
-  end
-
-  for _, note in pairs(chord) do
-    self:output(1, note)
-  end
-
-  Timer.schedule(function()
-    self:__finishNotes()
-  end, Timer.now() + 100)
 end
 
 function Chords:playNextChord()

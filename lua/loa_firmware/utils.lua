@@ -1,73 +1,37 @@
-local function quote(value)
-  return "'" .. value .. "'"
+---From https://stackoverflow.com/a/66370080/12207499, thanks PiFace!
+local function isArray(t)
+  return #t > 0 and next(t, #t) == nil
 end
 
-local function doubleQuote(value)
-  return '"' .. value .. '"'
+local function serializeValue(value)
+  return type(value) == 'string' and ("'" .. value .. "'") or tostring(value)
 end
 
-local function bracket(value)
-  return '[' .. value .. ']'
-end
-
----Check wether a value is primitive (number, boolean, string) or complex
----(table, function, ...)
----@param value any
----@return boolean
-local function isPrimitve(value)
-  local valueType = type(value)
-  return (
-      valueType == 'number'
-      or valueType == 'string'
-      or valueType == 'boolean'
-    )
-end
-
----Return a json representation of the value.
----@param value any
----@return string
-local function valueToJson(value)
-  local valueType = type(value)
-  local str = isPrimitve(value) and tostring(value) or doubleQuote(valueType)
-  return valueType == 'string' and doubleQuote(str) or str
-end
-
----Return a json representation of the key.
----@param key any
----@return string
-local function keyToJson(key)
-  local keyType = type(key)
-  local keyIsPrimitve = isPrimitve(key)
-  local str = keyIsPrimitve and tostring(key) or type(key)
-  return (not keyIsPrimitve or keyType == 'number') and bracket(str) or str
+local function serializeKey(key)
+  return type(key) == 'string' and key or '[' .. key .. ']'
 end
 
 local utils = {}
 
----Convert a table into a json representation.
----based on https://stackoverflow.com/a/64796533/12207499, thanks Francisco!
----@param t table
----@return string
-function utils.tableToJson(t, done)
+---Based on https://stackoverflow.com/a/64796533/12207499, thanks Francisco!
+function utils.serializeTable(t, done)
   done = done or {}
   done[t] = true
 
   local str = '{'
   local key, value = next(t, nil)
   while key do
+    local valueJson
     if type(value) == 'table' and not done[value] then
       done[value] = true
-      str = str
-        .. string.format(
-          '"%s":%s',
-          keyToJson(key),
-          utils.tableToJson(value, done)
-        )
-
+      valueJson = utils.serializeTable(value, done)
       done[value] = nil
     else
-      str = str .. string.format('"%s":%s', keyToJson(key), valueToJson(value))
+      valueJson = serializeValue(value)
     end
+
+    str = str
+      .. (isArray(t) and valueJson or serializeKey(key) .. '=' .. valueJson)
 
     key, value = next(t, key)
     if key then
@@ -77,20 +41,19 @@ function utils.tableToJson(t, done)
   return str .. '}'
 end
 
----Generate a json representation of the value.
 function utils.dump(...)
   local args = { ... }
-  local json = ''
+  local str = ''
   for i = 1, select('#', ...) do
     local value = args[i]
-    json = json
+    str = str
       .. (i > 1 and ', ' or '')
       .. (
-        type(value) == 'table' and utils.tableToJson(value)
-        or valueToJson(value)
+        type(value) == 'table' and utils.serializeTable(value)
+        or serializeValue(value)
       )
   end
-  return bracket(json)
+  return '{' .. str .. '}'
 end
 
 return utils
