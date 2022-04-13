@@ -3,6 +3,7 @@ local utils = require('utils')
 
 ---@class Prop : Class
 ---@field value any
+---@field valueType string
 ---@field default any
 ---@field instance Module The owner of the prop.
 ---@field display number The display the prop is rendered on, if visible.
@@ -39,6 +40,19 @@ end
 ---@param writeValue boolean Wether to write the value to the encoder or not. (default = true)
 ---@param emitEvents boolean Wether to emit events on the instance or not. (default = true)
 function PropBase:setValue(value, writeValue, emitEvents)
+  if self.valueType then
+    local providedType = type(value)
+    assert(
+      providedType == self.valueType,
+      string.format(
+        "Wrong value for prop '%s': expected %s got %s.",
+        self.name,
+        self.valueType,
+        providedType
+      )
+    )
+  end
+
   writeValue = writeValue == nil and true or writeValue
   emitEvents = emitEvents == nil and true or emitEvents
 
@@ -50,7 +64,8 @@ function PropBase:setValue(value, writeValue, emitEvents)
 
   if emitEvents then
     self.instance:__emit('prop:change', self.name, value)
-    Instances.updateProp(
+    App.sendMessage(
+      '/prop/value',
       self.instance.__id,
       self.name,
       self:serializeValue(value)

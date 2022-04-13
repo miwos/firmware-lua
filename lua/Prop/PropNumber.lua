@@ -9,6 +9,7 @@ local PropNumber = class(PropBase)
 
 PropNumber.serializeFields = { 'min', 'max', 'setp', 'default', 'unit' }
 PropNumber.type = 'number'
+PropNumber.valueType = 'number'
 
 local function ease(x)
   return 1.383493
