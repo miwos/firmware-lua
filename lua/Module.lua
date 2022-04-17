@@ -22,7 +22,7 @@ function Module:constructor()
   self.__outputs = {}
 
   self.__props = {}
-  for _, definition in ipairs(self.__propDefinitions) do
+  for _, definition in ipairs(self.__propDefinitions or {}) do
     self.__props[definition.name] = definition:create(self)
   end
   self.props = self:__createPropsProxy()
@@ -66,8 +66,7 @@ function Module:defineInOut(inputsOutputs)
   local inputs = {}
   local outputs = {}
 
-  for i = 1, #inputsOutputs do
-    local inputOutput = inputsOutputs[i]
+  for i, inputOutput in ipairs(inputsOutputs) do
     local category = inputOutput.direction == Direction.In and inputs or outputs
     -- We can omit the direction as the inputs/outputs are already grouped.
     category[#category + 1] = { signal = inputOutput.signal }
@@ -243,6 +242,42 @@ end
 ---Clear all connections.
 function Module:__clearConnections()
   self.__outputs = {}
+end
+
+function Module:__serialize()
+  local function serializeInputsOutputs(t)
+    if not t then
+      return {}
+    end
+
+    local serialized = {}
+    for _, inputOutput in ipairs(t) do
+      serialized[#serialized + 1] = {
+        signal = inputOutput.signal == 1 and 'midi' or 'trigger',
+      }
+    end
+
+    return serialized
+  end
+
+  local props = {}
+  if self.__propDefinitions then
+    for _, definition in pairs(self.__propDefinitions) do
+      props[#props + 1] = definition:serialize()
+    end
+  end
+
+  local info = self.__info or {}
+  return utils.serializeTable({
+    -- Note: `self#__id` is the module instance's id, while `self#__name` is
+    -- what we'll use as the module(definition)'s id.
+    id = self.__name,
+    shapeId = info.shape,
+    label = info.label,
+    props = props,
+    inputs = serializeInputsOutputs(self.__inputDefinitions),
+    outputs = serializeInputsOutputs(self.__outputDefinitions),
+  })
 end
 
 function Module:__destroy()

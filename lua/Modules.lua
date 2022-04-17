@@ -19,24 +19,14 @@ end
 function Modules.getInfo(id)
   local path = 'modules.' .. id
   local wasLoaded = _G._LOADED[path]
+
   ---@type Module
   local module = require('modules.' .. id)
-
-  local info = module.__info or {}
-  info.inputs = module.__inputDefinitions
-  info.outputs = module.__outputDefinitions
-
-  info.props = {}
-  local propDefinitions = module.__propDefinitions
-  if propDefinitions then
-    for _, definition in pairs(propDefinitions) do
-      info.props[#info.props + 1] = definition:serialize()
-    end
-  end
+  local info = module:__serialize()
 
   if not wasLoaded then
     _G._LOADED[path] = nil
   end
 
-  return utils.serializeTable(info)
+  return info
 end

@@ -60,7 +60,7 @@ end
 function PatchView:getProp(encoderIndex)
   local patch = Patches.activePatch
   if patch and patch.encoders then
-    local encoders = patch.encoders[self.page]
+    local encoders = patch.encoders[self.page] or {}
     local encoder = encoders[encoderIndex]
     if encoder then
       local instanceId, propName = unpack(encoder)
@@ -69,14 +69,24 @@ function PatchView:getProp(encoderIndex)
   end
 end
 
-function PatchView:handleButtonClick(index)
+function PatchView:handleButtonClick(index, duration)
   if index <= 3 then
     Patches.selectPart(index)
     App.selectPart(index)
-  else
+  elseif index <= 6 then
     local pageIndex = index - 3 -- button4 => page1, button5 => page2, ...
     self:update('page', pageIndex)
     Encoders.selectPage(pageIndex)
+  else
+    local encoderIndex = index - 6
+    local prop = self:getProp(encoderIndex)
+    if prop then
+      if duration < 1000 then
+        prop:handleEncoderClick()
+      else
+        prop:handleEncoderHold()
+      end
+    end
   end
 end
 
@@ -84,13 +94,6 @@ function PatchView:handleEncoderChange(index, value)
   local prop = self:getProp(index)
   if prop then
     prop:handleEncoderChange(value)
-  end
-end
-
-function PatchView:handleEncoderClick(index)
-  local prop = self:getProp(index)
-  if prop then
-    prop:handleEncoderClick()
   end
 end
 

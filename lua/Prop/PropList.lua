@@ -5,6 +5,7 @@ local utils = require('utils')
 local PropList = class(PropBase)
 PropList.serializeFields = {}
 PropList.type = 'list'
+PropList.valueType = 'table'
 PropList.Views = { Name = 1, Value = 2, Edit = 3 }
 
 function PropList:constructor(name, args)
@@ -20,10 +21,6 @@ function PropList:constructor(name, args)
 end
 
 function PropList:setValue(value, _, emitEvents)
-  if type(value) ~= 'table' then
-    Log.warn('Value must be a table.')
-    value = {}
-  end
   -- For a `PropList` the value is not changed by the encoder directly, so we
   -- never write the value to the encoder.
   PropList.super.setValue(self, value, false, emitEvents)

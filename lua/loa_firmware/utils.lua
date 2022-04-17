@@ -4,7 +4,11 @@ local function isArray(t)
 end
 
 local function serializeValue(value)
-  return type(value) == 'string' and ("'" .. value .. "'") or tostring(value)
+  local valueType = type(value)
+  local noQuotes = valueType == 'boolean'
+    or valueType == 'number'
+    or valueType == 'nil'
+  return noQuotes and tostring(value) or ("'" .. tostring(value) .. "'")
 end
 
 local function serializeKey(key)

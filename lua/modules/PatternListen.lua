@@ -21,8 +21,8 @@ PatternListen:defineInOut({ Input.Midi, Output.Trigger })
 
 PatternListen:defineProps({
   Prop.Button('record', { toggle = true }),
-  Prop.Percent('precise', { default = 0.8 }),
-  Prop.Percent('speed', { default = 0.2, before = '~ ' }),
+  Prop.Percent('precise', { default = 80 }),
+  Prop.Percent('speed', { default = 20, before = '~ ' }),
 })
 
 ---@param self ModulePatternListen
@@ -82,7 +82,7 @@ function PatternListen:checkForPattern()
   local notesDuration = self.notes[#self.notes] - notesOffset
   local patternDuration = self.pattern[#self.pattern]
 
-  local durationDeviation = self.props.speed * patternDuration
+  local durationDeviation = (self.props.speed / 100) * patternDuration
   local minDuration = patternDuration - durationDeviation
   local maxDuration = patternDuration + durationDeviation
   if notesDuration < minDuration or notesDuration > maxDuration then
@@ -93,7 +93,7 @@ function PatternListen:checkForPattern()
   local tolerance = utils.mapValue(
     self.props.precise,
     0,
-    1,
+    100,
     self.toleranceMax,
     self.toleranceMin
   )

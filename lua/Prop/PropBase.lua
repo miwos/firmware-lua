@@ -40,10 +40,9 @@ end
 ---@param writeValue boolean Wether to write the value to the encoder or not. (default = true)
 ---@param emitEvents boolean Wether to emit events on the instance or not. (default = true)
 function PropBase:setValue(value, writeValue, emitEvents)
-  if self.valueType then
-    local providedType = type(value)
-    assert(
-      providedType == self.valueType,
+  local providedType = type(value)
+  if self.valueType and (self.valueType ~= providedType) then
+    Log.warn(
       string.format(
         "Wrong value for prop '%s': expected %s got %s.",
         self.name,
@@ -51,6 +50,7 @@ function PropBase:setValue(value, writeValue, emitEvents)
         providedType
       )
     )
+    return
   end
 
   writeValue = writeValue == nil and true or writeValue
@@ -87,6 +87,11 @@ end
 
 function PropBase:handleEncoderClick()
   self.instance:__emit('prop:click', self.name)
+end
+
+function PropBase:handleEncoderHold()
+  Log.info('hold!')
+  self.instance:__emit('prop:hold', self.name)
 end
 
 function PropBase:handleEncoderChange(rawValue)
@@ -145,7 +150,14 @@ end
 function PropBase:serialize()
   local serialized = {}
 
-  local defaultFields = { 'name', 'type', 'index', 'list', 'default' }
+  local defaultFields = {
+    'name',
+    'type',
+    'valueType',
+    'index',
+    'list',
+    'default',
+  }
   for _, field in ipairs(defaultFields) do
     serialized[field] = self[field]
   end

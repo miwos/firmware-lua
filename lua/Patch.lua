@@ -45,7 +45,7 @@ function Patch:_createMissingInstances()
           -- We allow both `prop = value` and `prop = { value = x, ... }`.
           local value = type(data) == 'table' and data.value or data
           if prop then
-            prop:setValue(prop:deserializeValue(value), true, true)
+            prop:setValue(value, true, true)
           else
             Log.warn(
               string.format(
