@@ -11,19 +11,19 @@ Instances.updateOutputs = utils.throttle(function()
 
   for _, instance in pairs(patch.instances) do
     for outputIndex, definition in pairs(instance.__outputDefinitions) do
-      local isActive = false
-      if definition.signal == Signal.Midi then
-        local activeNotes = instance.__activeNotes[outputIndex]
-        isActive = activeNotes and utils.getTableLength(activeNotes) > 0
-      elseif definition.signal == Signal.Trigger then
-        isActive = instance.__activeTriggers[outputIndex]
-        instance.__activeTriggers[outputIndex] = false
-      end
+      local activeNotes = instance.__activeNotes[outputIndex]
+      local hasActiveNotes = activeNotes
+        and utils.getTableLength(activeNotes) > 0
+      local hasActiveTriggers = instance.__activeTriggers[outputIndex]
 
-      if isActive then
+      if hasActiveNotes or hasActiveTriggers then
         activeOutputs[#activeOutputs + 1] = instance.__id
           .. '-'
           .. (outputIndex - 1) -- zero-based index
+      end
+
+      if hasActiveTriggers then
+        instance.__activeTriggers[outputIndex] = false
       end
     end
   end

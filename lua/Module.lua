@@ -125,6 +125,11 @@ function Module:output(index, message)
       local noteId = Midi.getNoteId(note.note, note.channel)
       self.__activeNotes[index] = self.__activeNotes[index] or {}
       self.__activeNotes[index][noteId] = note:is(Midi.NoteOn) and true or nil
+    else
+      -- As a quick workaround, we use all non-note midi signals like CC as
+      -- a trigger.
+      -- TODO: find more general categories like sustained and trigger/burst
+      self.__activeTriggers[index] = true
     end
   elseif signal == Signal.Trigger then
     -- Keep track of any recently activated triggers. Used in
