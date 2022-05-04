@@ -1,7 +1,7 @@
 local utils = require('utils')
 
 ---@class ModulePitcher : Module
-local Pitcher = Modules.create('Pitcher', { shape = 'Transform' })
+local Pitcher = Modules.create('Pitch', { shape = 'Transform' })
 
 function Pitcher:init()
   self.usedPitches = {}

@@ -1,7 +1,7 @@
 LEDs = _G.LEDs or {}
 
 local onIndexes = {}
-local brightness = 70 -- 0 - 255
+local brightness = 32 -- 0 - 255
 
 function LEDs.toggle(index, state)
   if state then

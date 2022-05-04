@@ -2,5 +2,6 @@
 Buttons = _G.Buttons or {}
 
 function Buttons.handleClick(index, duration)
+  Log.info(index, duration)
   Views.activeView:handleButtonClick(index, duration)
 end

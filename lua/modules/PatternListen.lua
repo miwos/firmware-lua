@@ -26,7 +26,7 @@ PatternListen:defineProps({
 })
 
 ---@param self ModulePatternListen
-PatternListen:on('prop:click', function(self, name)
+PatternListen:on('prop:change', function(self, name)
   if name == 'record' then
     self:toggleRecording(self.props.record)
   end

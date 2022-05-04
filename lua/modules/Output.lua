@@ -4,7 +4,7 @@ local Output = Modules.create('Output', { shape = 'Output' })
 Output:defineInOut({ Input.Midi })
 
 Output:defineProps({
-  Prop.Number('device', { list = false, min = 1, max = 16, step = 1 }),
+  Prop.Number('device', { list = false, min = 2, max = 16, step = 1 }),
   Prop.Number('cable', { list = false, min = 1, max = 16, step = 1 }),
 })
 

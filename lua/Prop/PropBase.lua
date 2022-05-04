@@ -75,6 +75,8 @@ function PropBase:setValue(value, writeValue, emitEvents)
   if writeValue and self.visible then
     Encoders.write(self.encoder, self:encodeValue(self.value))
   end
+
+  self:update()
 end
 
 function PropBase:serializeValue(value)

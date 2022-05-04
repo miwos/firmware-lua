@@ -42,7 +42,7 @@ Chords:defineProps({
   Prop.List('chords', { length = 3, format = notesToString }),
   Prop.Number(
     'length',
-    { min = 1, max = 4, scale = true, default = 4, step = 1 }
+    { min = 1, max = 4, scale = true, default = 3, step = 1 }
   ),
 })
 

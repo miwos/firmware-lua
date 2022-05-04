@@ -4,6 +4,8 @@ local PropBase = require('Prop.PropBase')
 ---@class PropButton : Prop
 local PropButton = class(PropBase)
 PropButton.type = 'button'
+PropButton.valueType = 'boolean'
+PropButton.serializeFields = { 'toggle' }
 
 function PropButton:constructor(name, args)
   args = args or {}
@@ -16,18 +18,20 @@ function PropButton:show()
   self:render()
 end
 
-function PropButton:setValue(value)
+function PropButton:setValue(value, _, emitEvents)
   -- True or false might be serialized to 1 and 0.
-  if value == 0 then
+  if value == 1 then
+    value = true
+  elseif value == 0 then
     value = false
   end
-  self.value = value
+
+  PropButton.super.setValue(self, value, false, emitEvents)
 end
 
 function PropButton:handleEncoderClick()
   if self.toggle then
-    self.value = not self.value
-    self:update()
+    self:setValue(not self.value)
   end
   self.instance:__emit('prop:click', self.name)
   self.instance:__emit('prop:change', self.name, self.value)

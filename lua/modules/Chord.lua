@@ -1,5 +1,5 @@
 ---@class ModuleChorder : Module
-local Chorder = Modules.create('Chorder', { shape = 'Round' })
+local Chorder = Modules.create('Chord', { shape = 'Round', label = 'Chord' })
 
 function Chorder:init()
   self.notes = {}
@@ -8,15 +8,15 @@ end
 Chorder:defineInOut({ Input.Midi, Output.Midi })
 
 Chorder:defineProps({
-  Prop.Number('pitch1', { default = 6, min = -12, max = 12, step = 1 }),
-  Prop.Number('pitch2', { default = -12, min = -12, max = 12, step = 1 }),
+  Prop.Number('note1', { default = 6, min = -12, max = 12, step = 1 }),
+  Prop.Number('note2', { default = -12, min = -12, max = 12, step = 1 }),
 })
 
 ---@param note MidiNoteOn
 Chorder:on('input1:noteOn', function(self, note)
   self:output(1, note)
-  self:sendChordNote(note.note + self.props.pitch1, note.velocity, note.channel)
-  self:sendChordNote(note.note + self.props.pitch2, note.velocity, note.channel)
+  self:sendChordNote(note.note + self.props.note1, note.velocity, note.channel)
+  self:sendChordNote(note.note + self.props.note2, note.velocity, note.channel)
 end)
 
 ---@param note MidiNoteOn

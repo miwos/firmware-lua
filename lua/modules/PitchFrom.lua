@@ -9,7 +9,7 @@ end
 PitchFrom:defineInOut({ Input.Midi, Input.Midi, Output.Midi })
 
 PitchFrom:defineProps({
-  Prop.Number('key', { min = 0, max = 12, step = 1 }),
+  Prop.Number('root', { min = 22, max = 107, step = 1, default = 60 }),
 })
 
 ---@param message MidiNoteOn
@@ -35,7 +35,7 @@ end)
 
 ---@param message MidiNoteOn
 PitchFrom:on('input2:noteOn', function(self, message)
-  self.pitch = message.note - 60 -- C4
+  self.pitch = message.note - self.props.root
 end)
 
 return PitchFrom

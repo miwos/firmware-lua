@@ -1,5 +1,8 @@
 ---@class ModuleLowestNote : Module
-local LowestNote = Modules.create('LowestNote', { shape = 'Convert' })
+local LowestNote = Modules.create(
+  'LowestNoteFilter',
+  { shape = 'Filter', label = { 'Low', 'Note' } }
+)
 
 ---@param a MidiNoteOn
 ---@param b MidiNoteOn

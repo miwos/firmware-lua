@@ -1,3 +1,5 @@
+local utils = require('utils')
+
 ---@class ModuleChordSplit : Module
 local ChordSplit = Modules.create(
   'ChordSplit',
@@ -16,7 +18,7 @@ end
 ChordSplit:defineInOut({ Input.Midi, Output.Midi, Output.Midi })
 
 ChordSplit:defineProps({
-  Prop.Number('notes', { default = 3, min = 2, max = 5, step = 1 }),
+  Prop.Number('notes', { min = 2, max = 5, step = 1 }),
 })
 
 ---@param note MidiNoteOn
@@ -26,7 +28,7 @@ ChordSplit:on('input1:noteOn', function(self, note)
     self.notes = {}
   end
 
-  self:addNote(note)
+  self.notes[Midi.getNoteId(note)] = note
   self.lastNoteTime = time
 
   Timer.cancel(self.timerHandler)
@@ -44,13 +46,13 @@ ChordSplit:on('input1:noteOff', function(self, note)
 
   if outputIndex then
     self:output(outputIndex, note)
+  else
+    -- If the note is shorter than the maxNoteInterval, is hasn't been send
+    -- yet (because the split didn't happen). So instead of sending the noteOff
+    -- message we can just remove the note from our list.
+    self.notes[noteId] = nil
   end
 end)
-
----@param note MidiNoteOn
-function ChordSplit:addNote(note)
-  table.insert(self.notes, note)
-end
 
 ---@param outputIndex number
 ---@param note MidiNoteOn
@@ -60,8 +62,9 @@ function ChordSplit:playNote(outputIndex, note)
 end
 
 function ChordSplit:split()
-  local outputIndex = (#self.notes < self.props.notes) and 1 or 2
-
+  local notesCount = utils.getTableLength(self.notes)
+  local outputIndex = (notesCount < self.props.notes) and 1 or 2
+  self:__finishNotes(outputIndex)
   for _, note in pairs(self.notes) do
     self:playNote(outputIndex, note)
   end
